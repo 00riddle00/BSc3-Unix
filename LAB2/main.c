@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #define CMD_BUFF_SIZE 256
+#define ERR_SIZE       32
 
 int cd(char *path) {
     return chdir(path);
@@ -64,6 +65,9 @@ int main() {
     char *input;
     pid_t child_pid;
     int stat_loc;
+    char err_msg[ERR_SIZE];
+
+    signal(SIGINT, SIG_IGN);
 
     while (1) {   
         clear_screen();
@@ -90,9 +94,12 @@ int main() {
 
 
         if (child_pid == 0) {
+            signal(SIGINT, SIG_DFL);
+
             /* Never returns if the call is successful */
             if (execvp(command[0], command) < 0) {
-                perror(command[0]);
+                sprintf(err_msg, "tsh: error with input '%s'", command[0]);
+                perror(err_msg);
                 exit(1);
             }
         } else {
