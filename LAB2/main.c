@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +8,18 @@
 
 #define CMD_BUFF_SIZE 256
 #define ERR_SIZE       32
+
+#define ANSI_COLOR_RED         "\x1b[0;31m"
+#define ANSI_COLOR_BLUE        "\x1b[0;34m"
+#define ANSI_COLOR_CYAN        "\x1b[0;36m"
+#define ANSI_COLOR_WHITE       "\x1b[0;37m"
+
+#define ANSI_COLOR_RED_BOLD    "\x1b[1;31m"
+#define ANSI_COLOR_BLUE_BOLD   "\x1b[1;34m"
+#define ANSI_COLOR_CYAN_BOLD   "\x1b[1;36m"
+#define ANSI_COLOR_WHITE_BOLD  "\x1b[1;37m"
+
+#define ANSI_COLOR_RESET       "\x1b[0m"
 
 int cd(char *path) {
     return chdir(path);
@@ -22,7 +35,7 @@ void clear_screen() {
 }
 
 char* read_line(const char *prompt) {
-    printf("%s", prompt); // disp prompt
+    printf(ANSI_COLOR_BLUE_BOLD "%s" ANSI_COLOR_RESET, prompt); // disp prompt
     char* line = malloc(CMD_BUFF_SIZE * sizeof(char));
     int count = 0;
 
@@ -67,6 +80,8 @@ int main() {
     int stat_loc;
     char err_msg[ERR_SIZE];
 
+    errno = 0;
+
     signal(SIGINT, SIG_IGN);
 
     while (1) {   
@@ -98,8 +113,7 @@ int main() {
 
             /* Never returns if the call is successful */
             if (execvp(command[0], command) < 0) {
-                sprintf(err_msg, "tsh: error with input '%s'", command[0]);
-                perror(err_msg);
+                fprintf(stderr, ANSI_COLOR_CYAN_BOLD "tsh: " ANSI_COLOR_RED_BOLD "%s: " ANSI_COLOR_WHITE "%s\n" ANSI_COLOR_RESET, strerror(errno), command[0]);
                 exit(1);
             }
         } else {
