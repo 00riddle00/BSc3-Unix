@@ -7,6 +7,10 @@
 
 #define CMD_BUFF_SIZE 256
 
+int cd(char *path) {
+    return chdir(path);
+}
+
 void clear_screen() {
     static int first_time = 1; // clear screen for the first time
     if (first_time) {
@@ -68,6 +72,15 @@ int main() {
             continue;
         }
         command = get_input(input);
+
+        if (strcmp(command[0], "cd") ==0) {
+            if (cd(command[1]) < 0) {
+                perror(command[1]);
+            }
+
+            // skip the fork
+            continue;
+        }
 
         child_pid = fork();
         if (child_pid <0) {
