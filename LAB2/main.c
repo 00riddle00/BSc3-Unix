@@ -1,8 +1,12 @@
+/*#define READLINE c*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-/*#include <readline/readline.h>*/
+#ifdef READLINE
+#include <readline/readline.h>
+#endif /* READLINE */
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
@@ -113,6 +117,11 @@ int main() {
     return 0;
 }
 
+#ifdef READLINE
+char *read_line(const char *prompt) {
+    return readline(prompt);
+}
+#else
 char *read_line(const char *prompt) {
     printf(ANSI_COLOR_BLUE_BOLD "%s" ANSI_COLOR_RESET, prompt); // disp prompt
     char *line = malloc(CMD_BUFF_SIZE * sizeof(char));
@@ -155,6 +164,7 @@ char *read_line(const char *prompt) {
 
     return line;
 }
+#endif
 
 char **get_input(char *input) {
     char **command = malloc(CMD_BUFF_SIZE * sizeof(char *));
@@ -180,7 +190,7 @@ char **get_input(char *input) {
 void clear_screen() {
     static int first_time = 1; // clear screen for the first time
     if (first_time) {
-        const char *CLEAR_SCREEN_ANSI = " \e[1;1H\e[2J";
+        const char *CLEAR_SCREEN_ANSI = " \x1b[1;1H\x1b[2J";
         write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
         first_time = 0;
     }
