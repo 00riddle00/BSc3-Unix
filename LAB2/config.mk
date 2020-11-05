@@ -3,9 +3,13 @@ VERSION = 0.1
 
 # Customize below to fit your system
 
+# paths
+PREFIX = /usr/local
+MANPREFIX = ${PREFIX}/share/man
+
 # Readline, comment if you don't want it
-READLINELIB  = -lreadline
-READLINEFLAG = -DREADLINE
+#READLINELIB  = -lreadline
+#READLINEFLAG = -DREADLINE
 
 # includes and libs
 LIBS = ${READLINELIB}

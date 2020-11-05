@@ -1,0 +1,34 @@
+.TH TSH 1 tsh\-VERSION
+.SH NAME
+tsh \- minimal Unix Shell
+.SH SYNOPSIS
+.B tsh
+.RB [ \-v ]
+.SH DESCRIPTION
+tsh is a minimal Unix Shell for learning purposes. This man page is also
+created for learning purposes. 
+.B Makefile structure and customization via
+config.h are taken from dwm project (https://dwm.suckless.org/).
+.SH OPTIONS
+.TP
+.B \-v
+prints version information to standard output, then exits.
+.SH USAGE
+.SS Commands
+.B tsh accepts the standard commands used in UNIX shel.
+.SS Readline
+.B uncomment READLINEFLAG in config.mk for using GNU Readline for shell input.
+.SH CUSTOMIZATION
+tsh is customized by creating a custom config.h and (re)compiling the source code.
+.SH SEE ALSO
+.BR bash (1),
+.BR zsh (1)
+.SH ISSUES
+When Control-D (EOF signal) is sent while user input is non-empty, instead of
+doing nothing, it "locks" the cursor position, and does not allow to use
+backspace (backspace works used on newly typed text after the "locked" cursor
+position though). Also, when Control-D is issued twice in a row (without newly
+typed text in between), Control-C (SIGINT) signal issued right after that exits 
+the shell instead of aborting current user input and restarting the shell.
+.SH BUGS
+Send all bug reports with a patch to author@domain.com.
