@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = main.c
+SRC = tsh.c
 OBJ = ${SRC:.c=.o}
 
 all: options tsh
