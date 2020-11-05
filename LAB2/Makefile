@@ -27,7 +27,7 @@ clean:
 
 dist: clean
 	mkdir -p tsh-${VERSION}
-	cp -R LICENSE Makefile README.md config.mk ${SRC} tsh-${VERSION}
+	cp -R LICENSE Makefile README.md config.mk ${SRC} tsh.png tsh-${VERSION}
 	tar -cf tsh-${VERSION}.tar tsh-${VERSION}
 	gzip tsh-${VERSION}.tar
 	rm -rf tsh-${VERSION}
