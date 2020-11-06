@@ -1,5 +1,3 @@
-/*#define READLINE c*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +10,8 @@
 #include <signal.h>
 #include <setjmp.h>
 
-#define CMD_BUFF_SIZE 256
+#define CMD_BUFF_SIZE    256
+#define ANSI_COLOR_RESET "\x1b[0m"
 
 #define ANSI_COLOR_RED         "\x1b[0;31m"
 #define ANSI_COLOR_BLUE        "\x1b[0;34m"
@@ -24,7 +23,8 @@
 #define ANSI_COLOR_CYAN_BOLD   "\x1b[1;36m"
 #define ANSI_COLOR_WHITE_BOLD  "\x1b[1;37m"
 
-#define ANSI_COLOR_RESET       "\x1b[0m"
+/* configuration */
+#include "config.h"
 
 char *read_line(const char *);
 char **get_input(char *);
@@ -59,7 +59,7 @@ int main() {
         jump_active = 1;
 
         clear_screen();
-        input = read_line("{~tsh~}> ");
+        input = read_line(prompt);
 
         if (input == NULL) { /* Exit on Ctrl-D */
             printf("exit\n");
@@ -164,7 +164,7 @@ char *read_line(const char *prompt) {
 
     return line;
 }
-#endif
+#endif /* READLINE */
 
 char **get_input(char *input) {
     char **command = malloc(CMD_BUFF_SIZE * sizeof(char *));

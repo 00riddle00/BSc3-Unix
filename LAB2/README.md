@@ -10,4 +10,5 @@ Minimal Unix Shell for learning purposes
 * uninstall with `sudo make uninstall`
 
 ### Configuration
-custom configuration can be set in config.h
+custom configuration can be set in [config.h](config.h)
+for information about ANSI color codes, see [COLORS.md](COLORS.md)
