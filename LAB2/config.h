@@ -6,9 +6,14 @@
                
 /* See LICENSE file for copyright and license details. */
 
-/*=============================
- Appearance
-=============================*/
+/*==================================
+  Prompt
+==================================*/
+static const char prompt[]       = "{~tsh~}> ";
+
+/*==================================
+  Colors
+==================================*/
 
 /* ANSI color codes for defining 256 
  * colors are used. First 8 colors
@@ -19,38 +24,35 @@
  * escape codes, see COLORS.md */
 
 /*
-------------------
+-----------------
  8-bit colors
-------------------
-* BLACK     "0"
-* RED       "1"
-* GREEN     "2"
-* YELLOW    "3"
-* BLUE      "4"
-* MAGENTA   "5"
-* CYAN      "6"
-* WHITE     "7"
+-----------------
+* BLACK     0
+* RED       1
+* GREEN     2
+* YELLOW    3
+* BLUE      4
+* MAGENTA   5
+* CYAN      6
+* WHITE     7
 */
 
-static const char prompt[]          = "{~tsh~}> ";
+#define YES     1
+#define NO     -1
+#define NONE   -1
 
-static const char col_black[]       = "0";
-static const char col_red[]         = "1";
-static const char col_blue[]        = "4";
-static const char col_cyan[]        = "6";
-static const char col_white[]       = "7";
+static const int col_black     = 0;
+static const int col_red       = 1;
+static const int col_blue      = 4;
+static const int col_cyan      = 6;
+static const int col_white     = 7;
 
-static const char *colors[][5]         = {
-    /*                    fg           bg          bold   underline  blink   */
-    [ColPrompt]       = { col_blue,    -1,         1,     4,         -1       },
-    [ColErrPrefix]    = { col_cyan,    -1,         1,    -1,         -1       },
-    [ColErrMsg]       = { col_red,     -1,         1,    -1,         -1       }, 
-    [ColErrInput]     = { col_white,   -1,        -1,    -1,          5       }, 
-
-    //[ColPrompt]       = { col_blue,    NULL,       1,    0,         0       },
-    //[ColErrPrefix]    = { col_cyan,    NULL,       1,    0,         0       },
-    //[ColErrMsg]       = { col_red,     NULL,       1,    0,         0       }, 
-    //[ColErrInput]     = { col_white,   col_black,  0,    0,         0       }, 
-
+static const int colors[][5]         = {
+    /*                         fg            bg           bold    underline   blink    */
+    /*                    (color/NONE)  (color/NONE)    (YES/NO)   (YES/NO)  (YES/NO)  */
+    /*                                                                                 */
+    [ColPrompt]       = { col_blue,         NONE,         YES,       NO,       NO      },
+    [ColErrPrefix]    = { col_cyan,         NONE,         YES,       NO,       NO      },
+    [ColErrMsg]       = { col_red,          NONE,         YES,       NO,       NO      }, 
+    [ColErrInput]     = { col_white,        col_black,    NO,        NO,       NO      }, 
 };
-

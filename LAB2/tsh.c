@@ -14,21 +14,10 @@
 
 /* enums */
 enum { ColPrompt, ColErrPrefix, ColErrMsg, ColErrInput }; /* colors */
+enum { fg, bg, bold, underline, blink };                  /* colors */
 
 /* configuration */
 #include "config.h"
-
-/*colors[0][0]*/
-/*colors[0][1] = -1*/
-/*colors[0][2] =  1*/
-/*colors[0][3] = -1*/
-/*colors[0][4] = -1*/
-
-        /*"\x1b[38;5;7m" "\x1b[48;5;-1m" "\x1b[1m" "\x1b[4m" "\x1b[5m",*/
-
-/*char prompt_color[100];*/
-/*sprintf(prompt_color, "\x1b[38;5;%sm \x1b[48;5;%sm \x1b[%sm \x1b[%sm \x1b[%sm", colors[0][0], colors[0][1], colors[0][2], colors[0][3], colors[0][4]);*/
-/*sprintf(prompt_color, "\x1b[38;5;1m");*/
 
 char *read_line(const char *);
 char **get_input(char *);
@@ -40,28 +29,6 @@ static sigjmp_buf env;
 static volatile sig_atomic_t jump_active = 0;
 
 int main() {
-    char *test[100];
-    /*sprintf(test, "textas");*/
-    /*sprintf(test, "col: '%s'", colors[ColPrompt][0]);*/
-
-    /*sprintf(test, "\x1b[38;5;%sm \x1b[48;5;%sm \x1b[%sm \x1b[%sm \x1b[%sm", "7", "-1", "1", "4", "5");*/
-    /*sprintf(test, "\x1b[38;5;4m");*/
-
-    /*printf("col: '%s'", colors[ColPrompt][0]);*/
-    /*printf(test "%s" ANSI_COLOR_RESET, "tsh>");*/
-    /*printf(ANSI_COLOR_BLUE_BOLD "%s" ANSI_COLOR_RESET, prompt); // disp prompt*/
-
-            /*"7", "-1", "1", "4", "5"*/
-
-/*    printf("\x1b[38;5;%sm\x1b[48;5;%dm\x1b[%dm\x1b[%dm\x1b[%dmtest\x1b[0m ", */
-            /*colors[ColPrompt][0],*/
-            /*colors[ColPrompt][1],*/
-            /*colors[ColPrompt][2],*/
-            /*colors[ColPrompt][3],*/
-            /*colors[ColPrompt][4]);*/
-
-
-
     char **command;
     char *input;
     pid_t child_pid;
@@ -129,19 +96,19 @@ int main() {
             if (execvp(command[0], command) < 0) {
                 /*fprintf(stderr, ANSI_COLOR_CYAN_BOLD "tsh: " ANSI_COLOR_RED_BOLD "%s: " ANSI_COLOR_WHITE "%s\n" ANSI_COLOR_RESET, strerror(errno), command[0]);*/
                 fprintf(stderr,
-                        "\x1b[38;5;%sm"
+                        "\x1b[38;5;%dm"
                         "\x1b[48;5;%dm"
                         "\x1b[%dm"
                         "\x1b[%dm"
                         "\x1b[%dm"
                         "tsh: "
-                        "\x1b[38;5;%sm"
+                        "\x1b[38;5;%dm"
                         "\x1b[48;5;%dm"
                         "\x1b[%dm"
                         "\x1b[%dm"
                         "\x1b[%dm"
                         "%s: "
-                        "\x1b[38;5;%sm"
+                        "\x1b[38;5;%dm"
                         "\x1b[48;5;%dm"
                         "\x1b[%dm"
                         "\x1b[%dm"
@@ -188,7 +155,7 @@ char *read_line(const char *prompt) {
 #else
 char *read_line(const char *prompt) {
 
-    printf("\x1b[38;5;%sm"
+    printf("\x1b[38;5;%dm"
            "\x1b[48;5;%dm"
            "\x1b[%dm"
            "\x1b[%dm"
