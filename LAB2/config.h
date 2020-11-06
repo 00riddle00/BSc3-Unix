@@ -41,10 +41,16 @@ static const char col_cyan[]        = "6";
 static const char col_white[]       = "7";
 
 static const char *colors[][5]         = {
-    /*                    fg           bg          bold  underline  blink   */
-    [ColPrompt]       = { col_blue,    NULL,       1,    0,         0       },
-    [ColErrPrefix]    = { col_cyan,    NULL,       1,    0,         0       },
-    [ColErrMsg]       = { col_red,     NULL,       1,    0,         0       }, 
-    [ColErrInput]     = { col_white,   col_black,  0,    0,         0       }, 
+    /*                    fg           bg          bold   underline  blink   */
+    [ColPrompt]       = { col_blue,    -1,         1,     4,         -1       },
+    [ColErrPrefix]    = { col_cyan,    -1,         1,    -1,         -1       },
+    [ColErrMsg]       = { col_red,     -1,         1,    -1,         -1       }, 
+    [ColErrInput]     = { col_white,   -1,        -1,    -1,          5       }, 
+
+    //[ColPrompt]       = { col_blue,    NULL,       1,    0,         0       },
+    //[ColErrPrefix]    = { col_cyan,    NULL,       1,    0,         0       },
+    //[ColErrMsg]       = { col_red,     NULL,       1,    0,         0       }, 
+    //[ColErrInput]     = { col_white,   col_black,  0,    0,         0       }, 
+
 };
 
