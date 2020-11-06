@@ -10,7 +10,24 @@
 #include <signal.h>
 #include <setjmp.h>
 
-#define CMD_BUFF_SIZE    256
+#define CMD_BUFF_SIZE 256
+
+char *reset_colors() {
+    return "\x1b[0m";
+}
+
+char *set_colors(int fg, int bg, int bold, int uline, int blink) {
+
+    char *cls = malloc(sizeof(char) * 100);
+
+    // TODO check for out of bounds values
+    uline = (uline == -1) ? uline : uline + 3;
+    blink = (blink == -1) ? blink : blink + 4;
+
+    sprintf(cls, "\x1b[38;5;%dm\x1b[48;5;%dm\x1b[%dm\x1b[%dm\x1b[%dm", fg, bg, bold, uline, blink);
+
+    return cls;
+}
 
 /* enums */
 enum { ColPrompt, ColErrPrefix, ColErrMsg, ColErrInput }; /* colors */
@@ -94,7 +111,6 @@ int main() {
 
             /* Never returns if the call is successful */
             if (execvp(command[0], command) < 0) {
-                /*fprintf(stderr, ANSI_COLOR_CYAN_BOLD "tsh: " ANSI_COLOR_RED_BOLD "%s: " ANSI_COLOR_WHITE "%s\n" ANSI_COLOR_RESET, strerror(errno), command[0]);*/
                 fprintf(stderr,
                         "\x1b[38;5;%dm"
                         "\x1b[48;5;%dm"
@@ -155,19 +171,7 @@ char *read_line(const char *prompt) {
 #else
 char *read_line(const char *prompt) {
 
-    printf("\x1b[38;5;%dm"
-           "\x1b[48;5;%dm"
-           "\x1b[%dm"
-           "\x1b[%dm"
-           "\x1b[%dm"
-           "%s"
-           "\x1b[0m", 
-           colors[ColPrompt][0],
-           colors[ColPrompt][1],
-           colors[ColPrompt][2],
-           colors[ColPrompt][3],
-           colors[ColPrompt][4],
-           prompt);
+    printf("%s%s%stest", set_colors(7,-1,1,-1,-1), prompt, reset_colors());
 
     char *line = malloc(CMD_BUFF_SIZE * sizeof(char));
     if (line == NULL) {
@@ -251,3 +255,4 @@ void sigint_handler(int signo) {
     }
     siglongjmp(env, 42);
 }
+

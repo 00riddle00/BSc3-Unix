@@ -9,7 +9,8 @@
 /*==================================
   Prompt
 ==================================*/
-static const char prompt[]       = "{~tsh~}> ";
+
+static const char prompt[] = "{~tsh~}> ";
 
 /*==================================
   Colors
@@ -37,17 +38,17 @@ static const char prompt[]       = "{~tsh~}> ";
 * WHITE     7
 */
 
-#define YES     1
-#define NO     -1
-#define NONE   -1
+#define YES    1
+#define NO    -1
+#define NONE  -1
 
-static const int col_black     = 0;
-static const int col_red       = 1;
-static const int col_blue      = 4;
-static const int col_cyan      = 6;
-static const int col_white     = 7;
+static const int col_black    = 0;
+static const int col_red      = 1;
+static const int col_blue     = 4;
+static const int col_cyan     = 6;
+static const int col_white    = 7;
 
-static const int colors[][5]         = {
+static const int colors[][5]  = {
     /*                         fg            bg           bold    underline   blink    */
     /*                    (color/NONE)  (color/NONE)    (YES/NO)   (YES/NO)  (YES/NO)  */
     /*                                                                                 */
