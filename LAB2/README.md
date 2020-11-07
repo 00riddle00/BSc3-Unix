@@ -1,8 +1,6 @@
 
-## tsh
+## tsh - Minimal Unix Shell for learning purposes
 ![tsh_logo](tsh_logo.png)
-
-Minimal Unix Shell for learning purposes
 
 ### Dependencies
 * readline (optional)
@@ -16,4 +14,3 @@ Minimal Unix Shell for learning purposes
 ### Configuration
 custom configuration can be set in [config.h](config.h)
 for information about ANSI color codes, see [COLORS.md](COLORS.md)
-
