@@ -59,13 +59,20 @@ static const char alias_ls[]   = "ls --color=auto";
 
 #define CMD_BUFF_SIZE 256
 
-/* used to track startup array's size */
-static const int startup_cmd_count = 2;
+/* startup array's size The number of commands 
+ * in the array must be equal to it. */
+static const int startup_cmd_count = 3;
 
-/* startup commands can be added or removed here. 
- * The number of commands must match "startup_cmd_count" */
+/* startup array (startup commands can be added here) */
 static const char startup[][CMD_BUFF_SIZE] = {
-    "neofetch", 
-    "echo ===============\n" "Welcome to tsh!\n" "===============",
+    //"neofetch", 
+    
+    "echo -e \x1b[0;36m\x1b[1m===========================================",
+
+    "figlet |==tsh==|",
+
+    "echo ===========================================\n"
+          "---Welcome to tsh - a minimal UNIX shell!--\n"
+          "===========================================",
 };
 

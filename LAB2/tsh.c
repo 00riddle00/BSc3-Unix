@@ -117,6 +117,8 @@ int main() {
             /* Never returns if the call is successful */
             if (execvp(command[0], command) < 0) {
 
+                // TODO print "command not found" instead
+                // of "no such file or directory"
                 fprintf(stderr,
                         "%stsh: %s%s%s: %s%s%s%s\n", 
                         set_style( style[StyleErrPrefix][fg],
@@ -164,10 +166,10 @@ char *read_line(const char *prompt) {
 
     printf("%s%s%s", 
             set_style( style[StylePrompt][fg],
-                        style[StylePrompt][bg],
-                        style[StylePrompt][bold],
-                        style[StylePrompt][uline],
-                        style[StylePrompt][blink] ),
+                       style[StylePrompt][bg],
+                       style[StylePrompt][bold],
+                       style[StylePrompt][uline],
+                       style[StylePrompt][blink] ),
             prompt,
             reset_style() );
 
@@ -259,20 +261,36 @@ void sigint_handler(int signo) {
     if (!jump_active) {
         return;
     }
+    // TODO avoid magic numbers
     siglongjmp(env, 42);
 }
 
 char *set_style(int fg, int bg, int bold, int uline, int blink) {
 
-    char *cls = malloc(sizeof(char) * 100);
+    fg    = (fg >= 0 && fg <= 255) ? fg   : -1;  /* ANSI: ESC[38;5;{0-255}m -> foreground */
+    bg    = (bg >= 0 && bg <= 255) ? bg   : -1;  /* ANSI: ESC[48;5;{0-255}m -> background */
+    bold  = (bold  == 1)           ? 1    : -1;  /* ANSI: ESC[1m            -> bold       */
+    uline = (uline == 1)           ? 4    : -1;  /* ANSI: ESC[4m            -> underline  */
+    blink = (blink == 1)           ? 5    : -1;  /* ANSI: ESC[5             -> blink      */
 
-    // TODO check for out of bounds values
-    uline = (uline == -1) ? uline : uline + 3;
-    blink = (blink == -1) ? blink : blink + 4;
+    // TODO avoid magic numbers
+    char *style_str = malloc(sizeof(char) * 64);
 
-    sprintf(cls, "\x1b[38;5;%dm\x1b[48;5;%dm\x1b[%dm\x1b[%dm\x1b[%dm", fg, bg, bold, uline, blink);
+    sprintf(style_str, "\x1b[38;5;%dm\x1b[48;5;%dm\x1b[%dm\x1b[%dm\x1b[%dm", fg, bg, bold, uline, blink );
 
-    return cls;
+/*    sprintf( style_str,*/
+             /*"\x1b[38;5;%dm"\*/
+             /*"\x1b[48;5;%dm"\*/
+             /*"\x1b[%dm"\*/
+             /*"\x1b[%dm"\*/
+             /*"\x1b[%dm",*/
+             /*fg,*/
+             /*bg,*/
+             /*bold,*/
+             /*uline,*/
+             /*blink );*/
+
+    return style_str;
 }
 
 char *reset_style() {
