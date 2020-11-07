@@ -1,6 +1,5 @@
-
-## tsh - Minimal Unix Shell for learning purposes
 ![tsh_logo](tsh_logo.png)
+## tsh - Minimal Unix Shell for learning purposes
 
 ### Dependencies
 * readline (optional)
