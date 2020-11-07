@@ -276,19 +276,17 @@ char *set_style(int fg, int bg, int bold, int uline, int blink) {
     // TODO avoid magic numbers
     char *style_str = malloc(sizeof(char) * 64);
 
-    sprintf(style_str, "\x1b[38;5;%dm\x1b[48;5;%dm\x1b[%dm\x1b[%dm\x1b[%dm", fg, bg, bold, uline, blink );
-
-/*    sprintf( style_str,*/
-             /*"\x1b[38;5;%dm"\*/
-             /*"\x1b[48;5;%dm"\*/
-             /*"\x1b[%dm"\*/
-             /*"\x1b[%dm"\*/
-             /*"\x1b[%dm",*/
-             /*fg,*/
-             /*bg,*/
-             /*bold,*/
-             /*uline,*/
-             /*blink );*/
+    sprintf( style_str,
+             "\x1b[38;5;%dm"\
+             "\x1b[48;5;%dm"\
+             "\x1b[%dm"\
+             "\x1b[%dm"\
+             "\x1b[%dm",
+             fg,
+             bg,
+             bold,
+             uline,
+             blink );
 
     return style_str;
 }
