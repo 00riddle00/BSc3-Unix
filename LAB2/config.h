@@ -6,11 +6,25 @@
                
 /* See LICENSE file for copyright and license details. */
 
-/*==================================
-  Prompt
-==================================*/
 
-static const char prompt[] = "{~tsh~}> ";
+/*
+%u : the username of the current user
+%h : hostname
+%w : current working directory, with $HOME abbreviated with a tilde
+%d : current date in YYYY-MM-DD format
+%t : current time in 24-hour HH:MM format
+%j : number of jobs currently managed by the shell
+
+Prompt examples:
+
+"┌─{~tsh~}•[%h %w]\n└─╼ "
+"┌─{~tsh~}•[%d]•[%u@%h]•[%w]> \n└─╼ "
+"┌─{~tsh~}雷[%d]雷[%u@%h]雷[%w]>\n└─╼ "
+"┌─{ tsh}[ %d][ %u@%h][ %w]>\n└─╼ "
+"┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ "
+*/
+
+static char prompt[] = "┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ ";
 
 /*==================================
   Style
@@ -50,14 +64,15 @@ static const int style[][5]  = {
 };
 
 static const char alias_cls[]  = "cls";
-static const char alias_exit[] = "quit";
+static const char alias_exit[] = "q";
+// TODO make this alias work
 static const char alias_ls[]   = "ls --color=auto";
 
 /*==================================
   Startup
 ==================================*/
 
-#define CMD_BUFF_SIZE 256
+#define CMD_BUFF_SIZE 512
 
 /* startup array's size The number of commands 
  * in the array must be equal to it. */
@@ -65,11 +80,21 @@ static const int startup_cmd_count = 3;
 
 /* startup array (startup commands can be added here) */
 static const char startup[][CMD_BUFF_SIZE] = {
+
     //"neofetch", 
     
     "echo -e \x1b[0;36m\x1b[1m===========================================",
 
     "figlet |==tsh==|",
+    
+    /*
+    "echo  ._. . . . . . ._. . . ._. . . . . . . . ._\n"
+          "| |_____ _____| |_ ___| |__ ._____ _____| |\n"
+          "| |_____|_____| __/ __| '_ \\|_____|_____| |\n"
+          "| |_____|_____| |_\\__ \\ | | |_____|_____| |\n"
+          "| | . . . . . .\\__|___/_| |_|...........| |\n"
+          "|_| . . . . . . . . . . . . . . . . . . |_|",
+    */
 
     "echo ===========================================\n"
           "---Welcome to tsh - a minimal UNIX shell!--\n"

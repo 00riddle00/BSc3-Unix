@@ -8,6 +8,9 @@
 * install tsh with `sudo make install`
 * uninstall with `sudo make uninstall`
 
+### Making an archive
+* make .tar.gz with `make dist`
+
 ![tsh_prompt](tsh_prompt.png)
 
 ### Configuration
