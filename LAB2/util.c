@@ -1,0 +1,123 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "util.h"
+
+char *str_replace(char *, char *, char *);
+
+char **get_input(char *input, int buffsize) {
+    char **command = malloc(buffsize * sizeof(char *));
+    if (command == NULL) {
+        perror("malloc failed");
+        exit(1);
+    }
+
+    char *separator = " ";
+    char *parsed;
+    int index = 0;
+
+    parsed = strtok(input, separator);
+    while (parsed != NULL) {
+        command[index++] = parsed;
+        parsed = strtok(NULL, separator);
+    }
+
+    command[index] = NULL;
+    return command;
+}
+
+void clear_screen(int do_it) {
+    if (do_it < 0 || do_it > 1) {
+        printf("invalid argument to clear_screen()");
+        exit(1);
+    }
+
+    const char *CLEAR_SCREEN_ANSI = " \x1b[1;1H\x1b[2J";
+    static int first_time = 1; // clear screen for the first time
+
+    if (first_time) {
+        first_time = 0;
+        write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
+    } else if (do_it) {
+        write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
+    }
+}
+
+char *set_style(int fg, int bg, int bold, int uline, int blink) {
+
+    fg    = (fg >= 0 && fg <= 255) ? fg   : -1;  /* ANSI: ESC[38;5;{0-255}m -> foreground */
+    bg    = (bg >= 0 && bg <= 255) ? bg   : -1;  /* ANSI: ESC[48;5;{0-255}m -> background */
+    bold  = (bold  == 1)           ? 1    : -1;  /* ANSI: ESC[1m            -> bold       */
+    uline = (uline == 1)           ? 4    : -1;  /* ANSI: ESC[4m            -> underline  */
+    blink = (blink == 1)           ? 5    : -1;  /* ANSI: ESC[5             -> blink      */
+
+    // TODO avoid magic numbers
+    char *style_str = malloc(sizeof(char) * 64);
+
+    sprintf( style_str,
+             "\x1b[38;5;%dm"\
+             "\x1b[48;5;%dm"\
+             "\x1b[%dm"\
+             "\x1b[%dm"\
+             "\x1b[%dm",
+             fg,
+             bg,
+             bold,
+             uline,
+             blink );
+
+    return style_str;
+}
+
+char *reset_style() {
+    return "\x1b[0m";
+}
+
+// You must free the result if result is non-NULL.
+char *str_replace(char *orig, char *rep, char *with) {
+    char *result; // the return string
+    char *ins;    // the next insert point
+    char *tmp;    // varies
+    int len_rep;  // length of rep (the string to remove)
+    int len_with; // length of with (the string to replace rep with)
+    int len_front; // distance between rep and end of last rep
+    int count;    // number of replacements
+
+    // sanity checks and initialization
+    if (!orig || !rep)
+        return NULL;
+    len_rep = strlen(rep);
+    if (len_rep == 0)
+        return NULL; // empty rep causes infinite loop during count
+    if (!with)
+        with = "";
+    len_with = strlen(with);
+
+    // count the number of replacements needed
+    ins = orig;
+    for (count = 0; (tmp = strstr(ins, rep)); ++count) {
+        ins = tmp + len_rep;
+    }
+
+    tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+
+    if (!result)
+        return NULL;
+
+    // first time through the loop, all the variable are set correctly
+    // from here on,
+    //    tmp points to the end of the result string
+    //    ins points to the next occurrence of rep in orig
+    //    orig points to the remainder of orig after "end of rep"
+    while (count--) {
+        ins = strstr(orig, rep);
+        len_front = ins - orig;
+        tmp = strncpy(tmp, orig, len_front) + len_front;
+        tmp = strcpy(tmp, with) + len_with;
+        orig += len_front + len_rep; // move to next "end of rep"
+    }
+    strcpy(tmp, orig);
+    return result;
+}

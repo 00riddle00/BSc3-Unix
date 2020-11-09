@@ -72,14 +72,12 @@ static const char alias_ls[]   = "ls --color=auto";
   Startup
 ==================================*/
 
-#define CMD_BUFF_SIZE 512
-
 /* startup array's size The number of commands 
  * in the array must be equal to it. */
 static const int startup_cmd_count = 3;
 
 /* startup array (startup commands can be added here) */
-static const char startup[][CMD_BUFF_SIZE] = {
+static const char startup[][512] = {
 
     //"neofetch", 
     
