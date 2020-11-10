@@ -121,7 +121,9 @@ changeJobStatus(int pid, int status)
     }
 }
 //-----------------------------------------------------------------------------
-JobsList *delJob(JobsList *job) {
+JobsList *
+delJob(JobsList *job) 
+{
     if(jobsList == NULL) {
         return NULL;
     }
@@ -148,7 +150,9 @@ JobsList *delJob(JobsList *job) {
     return jobsList;
 }
 //-----------------------------------------------------------------------------
-JobsList *getJob(int key, int searchParameter) {
+JobsList *
+getJob(int key, int searchParameter) 
+{
     JobsList *job = jobsList;
     if(searchParameter == 1) {
        while (job != NULL) {
@@ -172,7 +176,9 @@ JobsList *getJob(int key, int searchParameter) {
     return NULL;
 }
 //-----------------------------------------------------------------------------
-void waitJob(JobsList *job) {
+void 
+waitJob(JobsList *job) 
+{
     int terminationStatus;
     while (waitpid(job->pgid, &terminationStatus, WNOHANG) == 0) {
         if(job->status == SUSPENDED) {
@@ -183,14 +189,18 @@ void waitJob(JobsList *job) {
 }
 
 //-----------------------------------------------------------------------------
-void killJob(int jobID) {
+void 
+killJob(int jobID) 
+{
     if(jobsList != NULL) {
         JobsList *job = getJob(jobID, 0);
         kill(job->pgid, SIGKILL);
     }   
 }
 //-----------------------------------------------------------------------------
-void putJobForeground(JobsList *job, int continueJob) {
+void 
+putJobForeground(JobsList *job, int continueJob) 
+{
     if(job == NULL) {
         return;
     }
@@ -206,7 +216,9 @@ void putJobForeground(JobsList *job, int continueJob) {
     tcsetpgrp(STDIN_FILENO, groupID);
 }
 //-----------------------------------------------------------------------------
-void putJobBackground(JobsList *job, int continueJob) {
+void 
+putJobBackground(JobsList *job, int continueJob) 
+{
     if(job == NULL) {
         return;
     }
@@ -219,7 +231,9 @@ void putJobBackground(JobsList *job, int continueJob) {
     tcsetpgrp(STDIN_FILENO, groupID);
 }
 //-----------------------------------------------------------------------------
-void signalHandler_child() {
+void 
+signalHandler_child() 
+{
     pid_t pid;
     int terminationStatus;
     pid = waitpid(WAIT_ANY, &terminationStatus, WUNTRACED | WNOHANG);
@@ -252,7 +266,9 @@ void signalHandler_child() {
     }
 }
 //-----------------------------------------------------------------------------
-void startJob(char *command[], int executionMode) {
+void 
+startJob(char *command[], int executionMode) 
+{
     pid_t pid;
     if((pid = fork()) == -1) {
         perror("fork error");
@@ -293,7 +309,9 @@ void startJob(char *command[], int executionMode) {
 
 }
 //-----------------------------------------------------------------------------
-void printJobs() {
+void 
+printJobs() 
+{
     JobsList *job = jobsList;
     while (job != NULL) {
         printf("%d\t%c\t%s\t%d\n", job->id, job->status, job->name, job->pgid);
@@ -303,7 +321,9 @@ void printJobs() {
 // ========================= jobs function implementations (END) ==================
 
 /* function implementations */
-void sigint_handler() {
+void 
+sigint_handler() 
+{
     if (!jump_active) {
         return;
     }
@@ -312,7 +332,9 @@ void sigint_handler() {
 }
 
 #ifndef READLINE
-char *read_line(char *prompt, int buffsize) {
+char *
+read_line(char *prompt, int buffsize) 
+{
 
     printf("%s%s%s", 
             set_style( style[StylePrompt][fg],
@@ -364,12 +386,16 @@ char *read_line(char *prompt, int buffsize) {
     return line;
 }
 #else
-char *read_line(char *prompt, int buffsize) {
+char *
+read_line(char *prompt, int buffsize) 
+{
     return readline(prompt);
 }
 #endif /* READLINE */
 
-char **get_input(char *input, int buffsize) {
+char **
+get_input(char *input, int buffsize) 
+{
     char **command = malloc(buffsize * sizeof(char *));
     if (command == NULL) {
         perror("malloc failed");
@@ -391,7 +417,9 @@ char **get_input(char *input, int buffsize) {
     return command;
 }
 
-int main() {
+int 
+main() 
+{
     errno = 0;
 
     command_index = 0;
