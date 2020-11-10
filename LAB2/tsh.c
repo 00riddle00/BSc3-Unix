@@ -518,13 +518,10 @@ int main() {
 // ======================= processing jobs commands==========================
         if(strcmp("bg", command[0]) == 0)
         {
-            if(command[1] == NULL)
-            {
+            if(command[1] == NULL) {
                 //@return;
                 continue;
-            }
-            else
-            {
+            } else {
                 int jobID = atoi(command[1]);
                 JobsList* job = getJob(jobID, 0);
                 putJobBackground(job, 1);
@@ -533,28 +530,22 @@ int main() {
             }
         }
 
-        if(strcmp("fg", command[0]) == 0)
-        {
-            if(command[1] == NULL)
-            {
+        if(strcmp("fg", command[0]) == 0) {
+            if(command[1] == NULL) {
                 //@return;
                 continue;
             }
 
             int jobID = atoi(command[1]);
             JobsList* job = getJob(jobID, 0);
-            if(job == NULL)
-            {
+            if(job == NULL) {
                 //@return;
                 continue;
             }
 
-            if(job->status == SUSPENDED)
-            {
+            if(job->status == SUSPENDED) {
                 putJobForeground(job, 1);
-            }
-            else
-            {
+            } else {
                 putJobForeground(job, 0);
             }
 
@@ -562,17 +553,14 @@ int main() {
             continue;
         }
 
-        if(strcmp("jobs", command[0]) == 0)
-        {
+        if(strcmp("jobs", command[0]) == 0) {
             printJobs();
             //@return;
             continue;
         }
 
-        if(strcmp("kill", command[0]) == 0)
-        {
-            if(command[1] == NULL)
-            {
+        if(strcmp("kill", command[0]) == 0) {
+            if(command[1] == NULL) {
                 //@return;
                 continue;
             }
@@ -581,16 +569,12 @@ int main() {
             continue;
         }
 
-
-        if((strcmp(command[command_index - 1], "&") == 0))
-        {
+        if((strcmp(command[command_index - 1], "&") == 0)) {
             command[--command_index] = NULL;
             startJob(command, BACKGROUND);
             //@return;
             continue;
-       }
-       else
-       {
+       } else {
             startJob(command, FOREGROUND);
             //@return;
             continue;
