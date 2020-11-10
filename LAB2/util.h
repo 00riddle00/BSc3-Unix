@@ -1,3 +1,5 @@
+
+/* function declarations */
 void clear_screen(int);
 char *set_style(int, int, int, int, int);
 char *reset_style();
