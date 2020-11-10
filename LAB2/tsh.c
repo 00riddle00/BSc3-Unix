@@ -44,14 +44,14 @@ pid_t groupID;
 
 typedef struct job {
     int id;
-    char * name;
+    char *name;
     pid_t pid;
     pid_t pgid;
     int status;
-    struct job * next;
+    struct job *next;
 } JobsList;
 
-JobsList * jobsList;
+JobsList *jobsList;
 // ============================ jobs variables (END) ==================================
 
 /* function declarations */
@@ -60,14 +60,14 @@ char *read_line(char *, int);
 char **get_input(char *, int);
 
 // ============================ jobs function declarations ==================================
-JobsList * addJob(pid_t pgid, char * name, int status);
+JobsList *addJob(pid_t pgid, char *name, int status);
 int changeJobStatus(int pid, int status);
-JobsList * delJob(JobsList * job);
-JobsList * getJob(int key, int searchParameter);
-void waitJob(JobsList * job);
+JobsList *delJob(JobsList *job);
+JobsList *getJob(int key, int searchParameter);
+void waitJob(JobsList *job);
 void killJob(int jobID);
-void putJobForeground(JobsList * job, int continueJob);
-void putJobBackground(JobsList* job, int continueJob);
+void putJobForeground(JobsList *job, int continueJob);
+void putJobBackground(JobsList *job, int continueJob);
 void signalHandler_child();
 void startJob(char *command[], int executionMode);
 void printJobs();
@@ -77,9 +77,11 @@ void printJobs();
 #include "config.h"
 
 // ============================ jobs function implementations ======================
-JobsList * addJob(pid_t pgid, char * name, int status) {
-    JobsList * newJob = malloc(sizeof(JobsList));
-    newJob->name = (char*) malloc(sizeof(name));
+JobsList *
+addJob(pid_t pgid, char *name, int status) 
+{
+    JobsList *newJob = malloc(sizeof(JobsList));
+    newJob->name = (char *) malloc(sizeof(name));
     newJob->name = strcpy(newJob->name, name);
     newJob->pgid = pgid;
     newJob->status = status;
@@ -90,7 +92,7 @@ JobsList * addJob(pid_t pgid, char * name, int status) {
         newJob->id = activeJobs;
         return newJob;
     } else {
-        JobsList * tmpList = jobsList;
+        JobsList *tmpList = jobsList;
         while (tmpList->next != NULL) {
             tmpList = tmpList->next;
         }
@@ -101,11 +103,13 @@ JobsList * addJob(pid_t pgid, char * name, int status) {
     }
 }
 //-----------------------------------------------------------------------------
-int changeJobStatus(int pid, int status) {
+int 
+changeJobStatus(int pid, int status) 
+{
     if(jobsList == NULL) {
         return 0;
     } else {
-        JobsList * job = jobsList;
+        JobsList *job = jobsList;
         while (job != NULL) {
             if(job->pgid == pid) {
                 job->status = status;
@@ -117,12 +121,12 @@ int changeJobStatus(int pid, int status) {
     }
 }
 //-----------------------------------------------------------------------------
-JobsList * delJob(JobsList * job) {
+JobsList *delJob(JobsList *job) {
     if(jobsList == NULL) {
         return NULL;
     }
-    JobsList * currentJob;
-    JobsList * prevJob;
+    JobsList *currentJob;
+    JobsList *prevJob;
 
     currentJob = jobsList->next;
     prevJob = jobsList;
@@ -144,8 +148,8 @@ JobsList * delJob(JobsList * job) {
     return jobsList;
 }
 //-----------------------------------------------------------------------------
-JobsList * getJob(int key, int searchParameter) {
-    JobsList* job = jobsList;
+JobsList *getJob(int key, int searchParameter) {
+    JobsList *job = jobsList;
     if(searchParameter == 1) {
        while (job != NULL) {
             if(job->pgid == key) {
@@ -168,7 +172,7 @@ JobsList * getJob(int key, int searchParameter) {
     return NULL;
 }
 //-----------------------------------------------------------------------------
-void waitJob(JobsList * job) {
+void waitJob(JobsList *job) {
     int terminationStatus;
     while (waitpid(job->pgid, &terminationStatus, WNOHANG) == 0) {
         if(job->status == SUSPENDED) {
@@ -181,12 +185,12 @@ void waitJob(JobsList * job) {
 //-----------------------------------------------------------------------------
 void killJob(int jobID) {
     if(jobsList != NULL) {
-        JobsList * job = getJob(jobID, 0);
+        JobsList *job = getJob(jobID, 0);
         kill(job->pgid, SIGKILL);
     }   
 }
 //-----------------------------------------------------------------------------
-void putJobForeground(JobsList * job, int continueJob) {
+void putJobForeground(JobsList *job, int continueJob) {
     if(job == NULL) {
         return;
     }
@@ -202,7 +206,7 @@ void putJobForeground(JobsList * job, int continueJob) {
     tcsetpgrp(STDIN_FILENO, groupID);
 }
 //-----------------------------------------------------------------------------
-void putJobBackground(JobsList* job, int continueJob) {
+void putJobBackground(JobsList *job, int continueJob) {
     if(job == NULL) {
         return;
     }
@@ -220,7 +224,7 @@ void signalHandler_child() {
     int terminationStatus;
     pid = waitpid(WAIT_ANY, &terminationStatus, WUNTRACED | WNOHANG);
     if (pid > 0) {
-        JobsList* job = getJob(pid, 1);
+        JobsList *job = getJob(pid, 1);
         if (job == NULL) {
             return;
         }
@@ -277,7 +281,7 @@ void startJob(char *command[], int executionMode) {
     } else {
         setpgid(pid, pid);
         jobsList = addJob(pid, *(command), (int) executionMode);
-        JobsList* job = getJob(pid, 1);
+        JobsList *job = getJob(pid, 1);
         if(executionMode == FOREGROUND) {
              putJobForeground(job, 0);
         }
@@ -290,7 +294,7 @@ void startJob(char *command[], int executionMode) {
 }
 //-----------------------------------------------------------------------------
 void printJobs() {
-    JobsList * job = jobsList;
+    JobsList *job = jobsList;
     while (job != NULL) {
         printf("%d\t%c\t%s\t%d\n", job->id, job->status, job->name, job->pgid);
         job = job->next;
@@ -417,7 +421,7 @@ int main() {
 
     time_t curr_time;
     char *time_str;
-    struct tm* time_info;
+    struct tm *time_info;
 
     char date_buffer[10];
     char time_buffer[5];
@@ -523,7 +527,7 @@ int main() {
                 continue;
             } else {
                 int jobID = atoi(command[1]);
-                JobsList* job = getJob(jobID, 0);
+                JobsList *job = getJob(jobID, 0);
                 putJobBackground(job, 1);
                 //@return;
                 continue;
@@ -537,7 +541,7 @@ int main() {
             }
 
             int jobID = atoi(command[1]);
-            JobsList* job = getJob(jobID, 0);
+            JobsList *job = getJob(jobID, 0);
             if(job == NULL) {
                 //@return;
                 continue;
