@@ -27,7 +27,7 @@
 
 /* enums */
 enum { StylePrompt, StyleErrPrefix, StyleErrMsg, StyleErrInput }; /* style */
-enum { fg, bg, bold, uline, blink };                              /* style */
+enum { FG, BG, BOLD, UNDERLINE, BLINK };                              /* style */
 
 /* variables */
 static const int cmd_buff_size = 512;
@@ -337,11 +337,11 @@ read_line(char *prompt, int buffsize)
 {
 
     printf("%s%s%s", 
-            set_style( style[StylePrompt][fg],
-                       style[StylePrompt][bg],
-                       style[StylePrompt][bold],
-                       style[StylePrompt][uline],
-                       style[StylePrompt][blink] ),
+            set_style( style[StylePrompt][FG],
+                       style[StylePrompt][BG],
+                       style[StylePrompt][BOLD],
+                       style[StylePrompt][UNDERLINE],
+                       style[StylePrompt][BLINK] ),
             prompt,
             reset_style() );
 
@@ -624,24 +624,24 @@ main()
                 // of "no such file or directory"
                 fprintf(stderr,
                         "%stsh: %s%s%s: %s%s%s%s\n", 
-                        set_style( style[StyleErrPrefix][fg],
-                                   style[StyleErrPrefix][bg],
-                                   style[StyleErrPrefix][bold],
-                                   style[StyleErrPrefix][uline],
-                                   style[StyleErrPrefix][blink] ),
+                        set_style( style[StyleErrPrefix][FG],
+                                   style[StyleErrPrefix][BG],
+                                   style[StyleErrPrefix][BOLD],
+                                   style[StyleErrPrefix][UNDERLINE],
+                                   style[StyleErrPrefix][BLINK] ),
                         reset_style(),
-                        set_style( style[StyleErrMsg][fg],
-                                   style[StyleErrMsg][bg],
-                                   style[StyleErrMsg][bold],
-                                   style[StyleErrMsg][uline],
-                                   style[StyleErrMsg][blink] ),
+                        set_style( style[StyleErrMsg][FG],
+                                   style[StyleErrMsg][BG],
+                                   style[StyleErrMsg][BOLD],
+                                   style[StyleErrMsg][UNDERLINE],
+                                   style[StyleErrMsg][BLINK] ),
                         strerror(errno),
                         reset_style(),
-                        set_style( style[StyleErrInput][fg],
-                                   style[StyleErrInput][bg],
-                                   style[StyleErrInput][bold],
-                                   style[StyleErrInput][uline],
-                                   style[StyleErrInput][blink] ),
+                        set_style( style[StyleErrInput][FG],
+                                   style[StyleErrInput][BG],
+                                   style[StyleErrInput][BOLD],
+                                   style[StyleErrInput][UNDERLINE],
+                                   style[StyleErrInput][BLINK] ),
                         command[0],
                         reset_style() );
 

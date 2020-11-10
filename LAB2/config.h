@@ -54,7 +54,7 @@ static const int col_white    = 7;
 /* make sure to use only the allowed values in parentheses */
 /* if bg color is set, the blink effect will not work      */
 static const int style[][5]  = {
-    /*                        fg              bg           bold    underline   blink    */
+    /*                        FG              BG           BOLD    UNDERLINE   BLINK    */
     /*                    (color/NONE)    (color/NONE)   (YES/NO)   (YES/NO)  (YES/NO)  */
     /*                                                                                  */
     [StylePrompt]      = { col_blue,         NONE,         YES,       NO,       NO      },
