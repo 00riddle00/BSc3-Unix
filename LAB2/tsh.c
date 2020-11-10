@@ -523,27 +523,23 @@ int main() {
         if(strcmp("bg", command[0]) == 0)
         {
             if(command[1] == NULL) {
-                //@return;
                 continue;
             } else {
                 int jobID = atoi(command[1]);
                 JobsList *job = getJob(jobID, 0);
                 putJobBackground(job, 1);
-                //@return;
                 continue;
             }
         }
 
         if(strcmp("fg", command[0]) == 0) {
             if(command[1] == NULL) {
-                //@return;
                 continue;
             }
 
             int jobID = atoi(command[1]);
             JobsList *job = getJob(jobID, 0);
             if(job == NULL) {
-                //@return;
                 continue;
             }
 
@@ -553,34 +549,28 @@ int main() {
                 putJobForeground(job, 0);
             }
 
-            //@return;
             continue;
         }
 
         if(strcmp("jobs", command[0]) == 0) {
             printJobs();
-            //@return;
             continue;
         }
 
         if(strcmp("kill", command[0]) == 0) {
             if(command[1] == NULL) {
-                //@return;
                 continue;
             }
             killJob(atoi(command[1]));
-            //@return;
             continue;
         }
 
         if((strcmp(command[command_index - 1], "&") == 0)) {
             command[--command_index] = NULL;
             startJob(command, BACKGROUND);
-            //@return;
             continue;
        } else {
             startJob(command, FOREGROUND);
-            //@return;
             continue;
        }
 
