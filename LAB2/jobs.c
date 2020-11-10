@@ -8,72 +8,72 @@
 
 /* variables */
 int mode;
-pid_t groupID;
+pid_t group_id;
 
-int activeJobs;
-JobsList *jobsList;
+int active_jobs;
+JobsList *jobs_list;
 
 /* function implementations */
 JobsList *
 add_job(pid_t pgid, char *name, int status) 
 {
-    JobsList *newJob = malloc(sizeof(JobsList));
-    newJob->name = (char *) malloc(sizeof(name));
-    newJob->name = strcpy(newJob->name, name);
-    newJob->pgid = pgid;
-    newJob->status = status;
-    newJob->next = NULL;
+    JobsList *new_job = malloc(sizeof(JobsList));
+    new_job->name = (char *) malloc(sizeof(name));
+    new_job->name = strcpy(new_job->name, name);
+    new_job->pgid = pgid;
+    new_job->status = status;
+    new_job->next = NULL;
 
-    if(jobsList == NULL) {
-        activeJobs++;
-        newJob->id = activeJobs;
-        return newJob;
+    if(jobs_list == NULL) {
+        active_jobs++;
+        new_job->id = active_jobs;
+        return new_job;
     } else {
-        JobsList *tmpList = jobsList;
-        while (tmpList->next != NULL) {
-            tmpList = tmpList->next;
+        JobsList *tmp_list = jobs_list;
+        while (tmp_list->next != NULL) {
+            tmp_list = tmp_list->next;
         }
-        newJob->id = tmpList->id + 1;
-        tmpList->next = newJob;
-        activeJobs++;
-        return jobsList;
+        new_job->id = tmp_list->id + 1;
+        tmp_list->next = new_job;
+        active_jobs++;
+        return jobs_list;
     }
 }
 
 JobsList *
 del_job(JobsList *job) 
 {
-    if(jobsList == NULL) {
+    if(jobs_list == NULL) {
         return NULL;
     }
-    JobsList *currentJob;
-    JobsList *prevJob;
+    JobsList *current_job;
+    JobsList *prev_job;
 
-    currentJob = jobsList->next;
-    prevJob = jobsList;
+    current_job = jobs_list->next;
+    prev_job = jobs_list;
 
-    if(prevJob->pgid == job->pgid) {
-        prevJob = prevJob->next;
-        activeJobs--;
-        return currentJob;
+    if(prev_job->pgid == job->pgid) {
+        prev_job = prev_job->next;
+        active_jobs--;
+        return current_job;
     }
 
-    while (currentJob != NULL) {
-         if(currentJob->pgid == job->pgid) {
-              activeJobs--;
-              prevJob->next = currentJob->next;
+    while (current_job != NULL) {
+         if(current_job->pgid == job->pgid) {
+              active_jobs--;
+              prev_job->next = current_job->next;
          }
-         prevJob = currentJob;
-         currentJob = currentJob->next;
+         prev_job = current_job;
+         current_job = current_job->next;
     }
-    return jobsList;
+    return jobs_list;
 }
 
 JobsList *
-get_job(int key, int searchParameter) 
+get_job(int key, int search_parameter) 
 {
-    JobsList *job = jobsList;
-    if(searchParameter == 1) {
+    JobsList *job = jobs_list;
+    if(search_parameter == 1) {
        while (job != NULL) {
             if(job->pgid == key) {
                 return job;
@@ -82,7 +82,7 @@ get_job(int key, int searchParameter)
             }
         }
     }
-    else if(searchParameter == 0) {
+    else if(search_parameter == 0) {
         while (job != NULL) {
             if(job->id == key) {
                 return job;
@@ -98,10 +98,10 @@ get_job(int key, int searchParameter)
 int 
 change_job_status(int pid, int status) 
 {
-    if(jobsList == NULL) {
+    if(jobs_list == NULL) {
         return 0;
     } else {
-        JobsList *job = jobsList;
+        JobsList *job = jobs_list;
         while (job != NULL) {
             if(job->pgid == pid) {
                 job->status = status;
@@ -116,95 +116,95 @@ change_job_status(int pid, int status)
 void 
 wait_job(JobsList *job) 
 {
-    int terminationStatus;
-    while (waitpid(job->pgid, &terminationStatus, WNOHANG) == 0) {
+    int termination_status;
+    while (waitpid(job->pgid, &termination_status, WNOHANG) == 0) {
         if(job->status == SUSPENDED) {
             return;
         }
     }
-    jobsList = del_job(job);
+    jobs_list = del_job(job);
 }
 
 
 void 
-kill_job(int jobID) 
+kill_job(int job_id) 
 {
-    if(jobsList != NULL) {
-        JobsList *job = get_job(jobID, 0);
+    if(jobs_list != NULL) {
+        JobsList *job = get_job(job_id, 0);
         kill(job->pgid, SIGKILL);
     }   
 }
 
 void 
-put_job_foreground(JobsList *job, int continueJob) 
+put_job_foreground(JobsList *job, int continue_job) 
 {
     if(job == NULL) {
         return;
     }
     job->status = FOREGROUND;
     tcsetpgrp(STDIN_FILENO, job->pgid);
-    if(continueJob) {
+    if(continue_job) {
         if(kill(job->pgid, SIGCONT) < 0) {
             perror("kill (SIGCONT)");
         }
     }
 
     wait_job(job);
-    tcsetpgrp(STDIN_FILENO, groupID);
+    tcsetpgrp(STDIN_FILENO, group_id);
 }
 
 void 
-put_job_background(JobsList *job, int continueJob) 
+put_job_background(JobsList *job, int continue_job) 
 {
     if(job == NULL) {
         return;
     }
     job->status = BACKGROUND;
-    if(continueJob) {
+    if(continue_job) {
         if(kill(job->pgid, SIGCONT) < 0) {
             perror("kill (SIGCONT)");
         }
     }
-    tcsetpgrp(STDIN_FILENO, groupID);
+    tcsetpgrp(STDIN_FILENO, group_id);
 }
 
 void 
 signal_handler_child() 
 {
     pid_t pid;
-    int terminationStatus;
-    pid = waitpid(WAIT_ANY, &terminationStatus, WUNTRACED | WNOHANG);
+    int termination_status;
+    pid = waitpid(WAIT_ANY, &termination_status, WUNTRACED | WNOHANG);
     if (pid > 0) {
         JobsList *job = get_job(pid, 1);
         if (job == NULL) {
             return;
         }
 
-        if (WIFEXITED(terminationStatus)) {
+        if (WIFEXITED(termination_status)) {
             if (job->status == BACKGROUND) {
                 printf("\n[%d]+  Done\t   %s\n", job->id, job->name);
-                jobsList = del_job(job);
+                jobs_list = del_job(job);
             }
         }
-        else if (WIFSIGNALED(terminationStatus)) {
+        else if (WIFSIGNALED(termination_status)) {
             printf("\n[%d]+  KILLED\t   %s\n", job->id, job->name);
-            jobsList = del_job(job);
+            jobs_list = del_job(job);
         }
-        else if (WIFSTOPPED(terminationStatus)) {
+        else if (WIFSTOPPED(termination_status)) {
             tcsetpgrp(STDIN_FILENO, job->pgid);
             change_job_status(pid, SUSPENDED);
-            printf("\n[%d]+   stopped\t   %s\n", activeJobs, job->name);
+            printf("\n[%d]+   stopped\t   %s\n", active_jobs, job->name);
             return;
         } else {
             if (job->status == BACKGROUND) {
-                jobsList = del_job(job);
+                jobs_list = del_job(job);
             }
         }
     }
 }
 
 void 
-start_job(char *command[], int executionMode) 
+start_job(char *command[], int execution_mode) 
 {
     pid_t pid;
     if((pid = fork()) == -1) {
@@ -218,12 +218,12 @@ start_job(char *command[], int executionMode)
         signal(SIGCHLD, &signal_handler_child);
         signal(SIGTTIN, SIG_DFL);
         setpgrp();
-        if(executionMode == FOREGROUND) {
+        if(execution_mode == FOREGROUND) {
             tcsetpgrp(STDIN_FILENO, getpid());
         }
 
-        if(executionMode == BACKGROUND) {
-            printf("[%d] %d\n", ++activeJobs, (int) getpid());
+        if(execution_mode == BACKGROUND) {
+            printf("[%d] %d\n", ++active_jobs, (int) getpid());
         }
 
         if(execvp(*command, command) == -1) {
@@ -233,13 +233,13 @@ start_job(char *command[], int executionMode)
         exit(EXIT_SUCCESS);
     } else {
         setpgid(pid, pid);
-        jobsList = add_job(pid, *(command), (int) executionMode);
+        jobs_list = add_job(pid, *(command), (int) execution_mode);
         JobsList *job = get_job(pid, 1);
-        if(executionMode == FOREGROUND) {
+        if(execution_mode == FOREGROUND) {
              put_job_foreground(job, 0);
         }
 
-        if(executionMode == BACKGROUND) {
+        if(execution_mode == BACKGROUND) {
             put_job_background(job, 0);
         }
     }
@@ -249,7 +249,7 @@ start_job(char *command[], int executionMode)
 void 
 print_jobs() 
 {
-    JobsList *job = jobsList;
+    JobsList *job = jobs_list;
     while (job != NULL) {
         printf("%d\t%c\t%s\t%d\n", job->id, job->status, job->name, job->pgid);
         job = job->next;

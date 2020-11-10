@@ -17,7 +17,7 @@ typedef struct Job {
 } JobsList;
 
 /* function declarations */
-JobsList *add_job(pid_t , char *, int);
+JobsList *add_job(pid_t, char *, int);
 JobsList *del_job(JobsList *);
 JobsList *get_job(int, int);
 int change_job_status(int, int);
@@ -31,8 +31,7 @@ void print_jobs();
 
 /* variables */
 extern int mode;
-extern pid_t groupID;
+extern pid_t group_id;
 
-extern int activeJobs;
-extern JobsList *jobsList;
-
+extern int active_jobs;
+extern JobsList *jobs_list;

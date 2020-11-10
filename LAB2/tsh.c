@@ -28,15 +28,6 @@ static volatile sig_atomic_t jump_active = 0;
 char **command;
 int command_index;
 
-/* variables */
-/*int mode;*/
-/*pid_t groupID;*/
-
-/*int activeJobs;*/
-/*JobsList *jobsList;*/
-
-
-
 /* function declarations */
 /* TODO add param names on all fn declarations */
 void sigint_handler();
@@ -158,9 +149,9 @@ main()
     int startup_curr_cmd = 0;
 
     /* variables for jobs */
-    activeJobs = 0;
-    jobsList = NULL;
-    groupID = getpgrp();
+    active_jobs = 0;
+    jobs_list = NULL;
+    group_id = getpgrp();
 
 
     /* Setup info to be displayed at the prompt */
@@ -284,8 +275,8 @@ main()
             if(command[1] == NULL) {
                 continue;
             } else {
-                int jobID = atoi(command[1]);
-                JobsList *job = get_job(jobID, 0);
+                int job_id = atoi(command[1]);
+                JobsList *job = get_job(job_id, 0);
                 put_job_background(job, 1);
                 continue;
             }
@@ -296,8 +287,8 @@ main()
                 continue;
             }
 
-            int jobID = atoi(command[1]);
-            JobsList *job = get_job(jobID, 0);
+            int job_id = atoi(command[1]);
+            JobsList *job = get_job(job_id, 0);
             if(job == NULL) {
                 continue;
             }
