@@ -60,17 +60,17 @@ char *read_line(char *, int);
 char **get_input(char *, int);
 
 // ============================ jobs function declarations ==================================
-JobsList *addJob(pid_t pgid, char *name, int status);
-int changeJobStatus(int pid, int status);
-JobsList *delJob(JobsList *job);
-JobsList *getJob(int key, int searchParameter);
-void waitJob(JobsList *job);
-void killJob(int jobID);
-void putJobForeground(JobsList *job, int continueJob);
-void putJobBackground(JobsList *job, int continueJob);
-void signalHandler_child();
-void startJob(char *command[], int executionMode);
-void printJobs();
+JobsList *add_Job(pid_t pgid, char *name, int status);
+int change_job_status(int pid, int status);
+JobsList *del_job(JobsList *job);
+JobsList *get_job(int key, int searchParameter);
+void wait_job(JobsList *job);
+void kill_job(int jobID);
+void put_job_foreground(JobsList *job, int continueJob);
+void put_job_background(JobsList *job, int continueJob);
+void signal_handler_child();
+void start_job(char *command[], int executionMode);
+void print_jobs();
 // ============================ jobs function declarations (END) ==================================
 
 /* configuration, allows nested code to access above variables */
@@ -78,7 +78,7 @@ void printJobs();
 
 // ============================ jobs function implementations ======================
 JobsList *
-addJob(pid_t pgid, char *name, int status) 
+add_job(pid_t pgid, char *name, int status) 
 {
     JobsList *newJob = malloc(sizeof(JobsList));
     newJob->name = (char *) malloc(sizeof(name));
@@ -104,7 +104,7 @@ addJob(pid_t pgid, char *name, int status)
 }
 //-----------------------------------------------------------------------------
 int 
-changeJobStatus(int pid, int status) 
+change_job_status(int pid, int status) 
 {
     if(jobsList == NULL) {
         return 0;
@@ -122,7 +122,7 @@ changeJobStatus(int pid, int status)
 }
 //-----------------------------------------------------------------------------
 JobsList *
-delJob(JobsList *job) 
+del_job(JobsList *job) 
 {
     if(jobsList == NULL) {
         return NULL;
@@ -151,7 +151,7 @@ delJob(JobsList *job)
 }
 //-----------------------------------------------------------------------------
 JobsList *
-getJob(int key, int searchParameter) 
+get_job(int key, int searchParameter) 
 {
     JobsList *job = jobsList;
     if(searchParameter == 1) {
@@ -177,7 +177,7 @@ getJob(int key, int searchParameter)
 }
 //-----------------------------------------------------------------------------
 void 
-waitJob(JobsList *job) 
+wait_job(JobsList *job) 
 {
     int terminationStatus;
     while (waitpid(job->pgid, &terminationStatus, WNOHANG) == 0) {
@@ -185,21 +185,21 @@ waitJob(JobsList *job)
             return;
         }
     }
-    jobsList = delJob(job);
+    jobsList = del_job(job);
 }
 
 //-----------------------------------------------------------------------------
 void 
-killJob(int jobID) 
+kill_job(int jobID) 
 {
     if(jobsList != NULL) {
-        JobsList *job = getJob(jobID, 0);
+        JobsList *job = get_job(jobID, 0);
         kill(job->pgid, SIGKILL);
     }   
 }
 //-----------------------------------------------------------------------------
 void 
-putJobForeground(JobsList *job, int continueJob) 
+put_job_foreground(JobsList *job, int continueJob) 
 {
     if(job == NULL) {
         return;
@@ -212,12 +212,12 @@ putJobForeground(JobsList *job, int continueJob)
         }
     }
 
-    waitJob(job);
+    wait_job(job);
     tcsetpgrp(STDIN_FILENO, groupID);
 }
 //-----------------------------------------------------------------------------
 void 
-putJobBackground(JobsList *job, int continueJob) 
+put_job_background(JobsList *job, int continueJob) 
 {
     if(job == NULL) {
         return;
@@ -232,13 +232,13 @@ putJobBackground(JobsList *job, int continueJob)
 }
 //-----------------------------------------------------------------------------
 void 
-signalHandler_child() 
+signal_handler_child() 
 {
     pid_t pid;
     int terminationStatus;
     pid = waitpid(WAIT_ANY, &terminationStatus, WUNTRACED | WNOHANG);
     if (pid > 0) {
-        JobsList *job = getJob(pid, 1);
+        JobsList *job = get_job(pid, 1);
         if (job == NULL) {
             return;
         }
@@ -246,28 +246,28 @@ signalHandler_child()
         if (WIFEXITED(terminationStatus)) {
             if (job->status == BACKGROUND) {
                 printf("\n[%d]+  Done\t   %s\n", job->id, job->name);
-                jobsList = delJob(job);
+                jobsList = del_job(job);
             }
         }
         else if (WIFSIGNALED(terminationStatus)) {
             printf("\n[%d]+  KILLED\t   %s\n", job->id, job->name);
-            jobsList = delJob(job);
+            jobsList = del_job(job);
         }
         else if (WIFSTOPPED(terminationStatus)) {
             tcsetpgrp(STDIN_FILENO, job->pgid);
-            changeJobStatus(pid, SUSPENDED);
+            change_job_status(pid, SUSPENDED);
             printf("\n[%d]+   stopped\t   %s\n", activeJobs, job->name);
             return;
         } else {
             if (job->status == BACKGROUND) {
-                jobsList = delJob(job);
+                jobsList = del_job(job);
             }
         }
     }
 }
 //-----------------------------------------------------------------------------
 void 
-startJob(char *command[], int executionMode) 
+start_job(char *command[], int executionMode) 
 {
     pid_t pid;
     if((pid = fork()) == -1) {
@@ -278,7 +278,7 @@ startJob(char *command[], int executionMode)
         signal(SIGINT, SIG_DFL);
         signal(SIGQUIT, SIG_DFL);
         signal(SIGTSTP, SIG_DFL);
-        signal(SIGCHLD, &signalHandler_child);
+        signal(SIGCHLD, &signal_handler_child);
         signal(SIGTTIN, SIG_DFL);
         setpgrp();
         if(executionMode == FOREGROUND) {
@@ -296,21 +296,21 @@ startJob(char *command[], int executionMode)
         exit(EXIT_SUCCESS);
     } else {
         setpgid(pid, pid);
-        jobsList = addJob(pid, *(command), (int) executionMode);
-        JobsList *job = getJob(pid, 1);
+        jobsList = add_job(pid, *(command), (int) executionMode);
+        JobsList *job = get_job(pid, 1);
         if(executionMode == FOREGROUND) {
-             putJobForeground(job, 0);
+             put_job_foreground(job, 0);
         }
 
         if(executionMode == BACKGROUND) {
-            putJobBackground(job, 0);
+            put_job_background(job, 0);
         }
     }
 
 }
 //-----------------------------------------------------------------------------
 void 
-printJobs() 
+print_jobs() 
 {
     JobsList *job = jobsList;
     while (job != NULL) {
@@ -464,7 +464,7 @@ main()
 // ============================ Job control signals in parent ==============================
     signal(SIGTTOU, SIG_IGN);  //ttyout
     signal(SIGTTIN, SIG_IGN);  //ttyin
-    signal(SIGCHLD, &signalHandler_child);
+    signal(SIGCHLD, &signal_handler_child);
 // ============================ Job control signals in parent (END) ==============================
 
     while (1) {   
@@ -554,8 +554,8 @@ main()
                 continue;
             } else {
                 int jobID = atoi(command[1]);
-                JobsList *job = getJob(jobID, 0);
-                putJobBackground(job, 1);
+                JobsList *job = get_job(jobID, 0);
+                put_job_background(job, 1);
                 continue;
             }
         }
@@ -566,22 +566,22 @@ main()
             }
 
             int jobID = atoi(command[1]);
-            JobsList *job = getJob(jobID, 0);
+            JobsList *job = get_job(jobID, 0);
             if(job == NULL) {
                 continue;
             }
 
             if(job->status == SUSPENDED) {
-                putJobForeground(job, 1);
+                put_job_foreground(job, 1);
             } else {
-                putJobForeground(job, 0);
+                put_job_foreground(job, 0);
             }
 
             continue;
         }
 
         if(strcmp("jobs", command[0]) == 0) {
-            printJobs();
+            print_jobs();
             continue;
         }
 
@@ -589,16 +589,16 @@ main()
             if(command[1] == NULL) {
                 continue;
             }
-            killJob(atoi(command[1]));
+            kill_job(atoi(command[1]));
             continue;
         }
 
         if((strcmp(command[command_index - 1], "&") == 0)) {
             command[--command_index] = NULL;
-            startJob(command, BACKGROUND);
+            start_job(command, BACKGROUND);
             continue;
        } else {
-            startJob(command, FOREGROUND);
+            start_job(command, FOREGROUND);
             continue;
        }
 
