@@ -42,13 +42,13 @@ int mode;
 
 pid_t groupID;
 
-typedef struct job {
+typedef struct Job {
     int id;
     char *name;
     pid_t pid;
     pid_t pgid;
     int status;
-    struct job *next;
+    struct Job *next;
 } JobsList;
 
 JobsList *jobsList;
