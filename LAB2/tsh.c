@@ -156,11 +156,12 @@ main()
     pid_t child_pid;
     int stat_loc;
     int startup_curr_cmd = 0;
-// ============================ jobs variable definitions in main() ==================================
+
+    /* variables for jobs */
     activeJobs = 0;
     jobsList = NULL;
     groupID = getpgrp();
-// ============================ jobs variable definitions in main() (END) ==================================
+
 
     /* Setup info to be displayed at the prompt */
     char *user_name = getenv("USER");
@@ -182,18 +183,19 @@ main()
     char date_buffer[10];
     char time_buffer[5];
 
-    /* Setup SIGINT */
+    /* ------- signal handling --------- */
+
+    /* SIGINT */
     struct sigaction s;
     s.sa_handler = sigint_handler;
     sigemptyset(&s.sa_mask);
     s.sa_flags = SA_RESTART;
     sigaction(SIGINT, &s, NULL);
 
-// ============================ Job control signals in parent ==============================
-    signal(SIGTTOU, SIG_IGN);  //ttyout
-    signal(SIGTTIN, SIG_IGN);  //ttyin
+    signal(SIGTTOU, SIG_IGN);  // ttyout
+    signal(SIGTTIN, SIG_IGN);  // ttyin
     signal(SIGCHLD, &signal_handler_child);
-// ============================ Job control signals in parent (END) ==============================
+    /* --------------------------------- */
 
     while (1) {   
         if (sigsetjmp(env, 1) == 42) {
@@ -275,7 +277,8 @@ main()
             continue;
         }
 
-// ======================= processing jobs commands==========================
+        /* ----------- processing job commands ---------- */
+
         if(strcmp("bg", command[0]) == 0)
         {
             if(command[1] == NULL) {
@@ -325,12 +328,11 @@ main()
             command[--command_index] = NULL;
             start_job(command, BACKGROUND);
             continue;
-       } else {
+        } else {
             start_job(command, FOREGROUND);
             continue;
-       }
-
-// ====================== processing jobs commands (END) ========================
+        }
+        /* ---------------------------------------------- */
 
         child_pid = fork();
         if (child_pid <0) {
