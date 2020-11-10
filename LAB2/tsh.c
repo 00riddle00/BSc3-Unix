@@ -16,21 +16,287 @@
 /* macros */
 #include "dbg.h" /* useful debugging macros */
 
+// ============================ jobs macros ==================================
+#define MAX_LENGTH 100
+#define MAX_PIPES 10
+#define MAX_ARGUMENTS 20
+#define FOREGROUND 'F'
+#define BACKGROUND 'B'
+#define SUSPENDED 'S'
+// ============================ jobs macros (END) ==================================
+
 /* enums */
 enum { StylePrompt, StyleErrPrefix, StyleErrMsg, StyleErrInput }; /* style */
 enum { fg, bg, bold, uline, blink };                              /* style */
-
-/* function declarations */
-void sigint_handler();
-char *read_line(char *, int);
 
 /* variables */
 static const int cmd_buff_size = 512;
 static sigjmp_buf env;
 static volatile sig_atomic_t jump_active = 0;
+char **command;
+int command_index;
+
+// ============================ jobs variables ==================================
+int activeJobs;
+int mode;
+
+pid_t groupID;
+
+typedef struct job {
+    int id;
+    char * name;
+    pid_t pid;
+    pid_t pgid;
+    int status;
+    struct job * next;
+} JobsList;
+
+JobsList * jobsList;
+// ============================ jobs variables (END) ==================================
+
+/* function declarations */
+void sigint_handler();
+char *read_line(char *, int);
+char **get_input(char *, int);
+
+// ============================ jobs function declarations ==================================
+JobsList * addJob(pid_t pgid, char * name, int status);
+int changeJobStatus(int pid, int status);
+JobsList * delJob(JobsList * job);
+JobsList * getJob(int key, int searchParameter);
+void waitJob(JobsList * job);
+void killJob(int jobID);
+void putJobForeground(JobsList * job, int continueJob);
+void putJobBackground(JobsList* job, int continueJob);
+void signalHandler_child();
+void startJob(char *command[], int executionMode);
+void printJobs();
+// ============================ jobs function declarations (END) ==================================
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
+
+// ============================ jobs function implementations ======================
+JobsList * addJob(pid_t pgid, char * name, int status) {
+    JobsList * newJob = malloc(sizeof(JobsList));
+    newJob->name = (char*) malloc(sizeof(name));
+    newJob->name = strcpy(newJob->name, name);
+    newJob->pgid = pgid;
+    newJob->status = status;
+    newJob->next = NULL;
+
+    if(jobsList == NULL) {
+        activeJobs++;
+        newJob->id = activeJobs;
+        return newJob;
+    } else {
+        JobsList * tmpList = jobsList;
+        while (tmpList->next != NULL) {
+            tmpList = tmpList->next;
+        }
+        newJob->id = tmpList->id + 1;
+        tmpList->next = newJob;
+        activeJobs++;
+        return jobsList;
+    }
+}
+//-----------------------------------------------------------------------------
+int changeJobStatus(int pid, int status) {
+    if(jobsList == NULL) {
+        return 0;
+    } else {
+        JobsList * job = jobsList;
+        while (job != NULL) {
+            if(job->pgid == pid) {
+                job->status = status;
+                return 1;
+            }
+            job = job->next;
+        }
+        return 0;
+    }
+}
+//-----------------------------------------------------------------------------
+JobsList * delJob(JobsList * job) {
+    if(jobsList == NULL) {
+        return NULL;
+    }
+    JobsList * currentJob;
+    JobsList * prevJob;
+
+    currentJob = jobsList->next;
+    prevJob = jobsList;
+
+    if(prevJob->pgid == job->pgid) {
+        prevJob = prevJob->next;
+        activeJobs--;
+        return currentJob;
+    }
+
+    while (currentJob != NULL) {
+         if(currentJob->pgid == job->pgid) {
+              activeJobs--;
+              prevJob->next = currentJob->next;
+         }
+         prevJob = currentJob;
+         currentJob = currentJob->next;
+    }
+    return jobsList;
+}
+//-----------------------------------------------------------------------------
+JobsList * getJob(int key, int searchParameter) {
+    JobsList* job = jobsList;
+    if(searchParameter == 1) {
+       while (job != NULL) {
+            if(job->pgid == key) {
+                return job;
+            } else {
+                job = job->next;
+            }
+        }
+    }
+    else if(searchParameter == 0) {
+        while (job != NULL) {
+            if(job->id == key) {
+                return job;
+            } else {
+                job = job->next;
+            }
+        }
+    }
+    
+    return NULL;
+}
+//-----------------------------------------------------------------------------
+void waitJob(JobsList * job) {
+    int terminationStatus;
+    while (waitpid(job->pgid, &terminationStatus, WNOHANG) == 0) {
+        if(job->status == SUSPENDED) {
+            return;
+        }
+    }
+    jobsList = delJob(job);
+}
+
+//-----------------------------------------------------------------------------
+void killJob(int jobID) {
+    if(jobsList != NULL) {
+        JobsList * job = getJob(jobID, 0);
+        kill(job->pgid, SIGKILL);
+    }   
+}
+//-----------------------------------------------------------------------------
+void putJobForeground(JobsList * job, int continueJob) {
+    if(job == NULL) {
+        return;
+    }
+    job->status = FOREGROUND;
+    tcsetpgrp(STDIN_FILENO, job->pgid);
+    if(continueJob) {
+        if(kill(job->pgid, SIGCONT) < 0) {
+            perror("kill (SIGCONT)");
+        }
+    }
+
+    waitJob(job);
+    tcsetpgrp(STDIN_FILENO, groupID);
+}
+//-----------------------------------------------------------------------------
+void putJobBackground(JobsList* job, int continueJob) {
+    if(job == NULL) {
+        return;
+    }
+    job->status = BACKGROUND;
+    if(continueJob) {
+        if(kill(job->pgid, SIGCONT) < 0) {
+            perror("kill (SIGCONT)");
+        }
+    }
+    tcsetpgrp(STDIN_FILENO, groupID);
+}
+//-----------------------------------------------------------------------------
+void signalHandler_child() {
+    pid_t pid;
+    int terminationStatus;
+    pid = waitpid(WAIT_ANY, &terminationStatus, WUNTRACED | WNOHANG);
+    if (pid > 0) {
+        JobsList* job = getJob(pid, 1);
+        if (job == NULL) {
+            return;
+        }
+
+        if (WIFEXITED(terminationStatus)) {
+            if (job->status == BACKGROUND) {
+                printf("\n[%d]+  Done\t   %s\n", job->id, job->name);
+                jobsList = delJob(job);
+            }
+        }
+        else if (WIFSIGNALED(terminationStatus)) {
+            printf("\n[%d]+  KILLED\t   %s\n", job->id, job->name);
+            jobsList = delJob(job);
+        }
+        else if (WIFSTOPPED(terminationStatus)) {
+            tcsetpgrp(STDIN_FILENO, job->pgid);
+            changeJobStatus(pid, SUSPENDED);
+            printf("\n[%d]+   stopped\t   %s\n", activeJobs, job->name);
+            return;
+        } else {
+            if (job->status == BACKGROUND) {
+                jobsList = delJob(job);
+            }
+        }
+    }
+}
+//-----------------------------------------------------------------------------
+void startJob(char *command[], int executionMode) {
+    pid_t pid;
+    if((pid = fork()) == -1) {
+        perror("fork error");
+        exit(EXIT_FAILURE);
+    }
+    else if(pid == 0) {
+        signal(SIGINT, SIG_DFL);
+        signal(SIGQUIT, SIG_DFL);
+        signal(SIGTSTP, SIG_DFL);
+        signal(SIGCHLD, &signalHandler_child);
+        signal(SIGTTIN, SIG_DFL);
+        setpgrp();
+        if(executionMode == FOREGROUND) {
+            tcsetpgrp(STDIN_FILENO, getpid());
+        }
+
+        if(executionMode == BACKGROUND) {
+            printf("[%d] %d\n", ++activeJobs, (int) getpid());
+        }
+
+        if(execvp(*command, command) == -1) {
+            printf("Error. Command not found: %s\n", command[0]);
+        }
+            
+        exit(EXIT_SUCCESS);
+    } else {
+        setpgid(pid, pid);
+        jobsList = addJob(pid, *(command), (int) executionMode);
+        JobsList* job = getJob(pid, 1);
+        if(executionMode == FOREGROUND) {
+             putJobForeground(job, 0);
+        }
+
+        if(executionMode == BACKGROUND) {
+            putJobBackground(job, 0);
+        }
+    }
+
+}
+//-----------------------------------------------------------------------------
+void printJobs() {
+    JobsList * job = jobsList;
+    while (job != NULL) {
+        printf("%d\t%c\t%s\t%d\n", job->id, job->status, job->name, job->pgid);
+        job = job->next;
+     }
+}
+// ========================= jobs function implementations (END) ==================
 
 /* function implementations */
 void sigint_handler() {
@@ -99,15 +365,42 @@ char *read_line(char *prompt, int buffsize) {
 }
 #endif /* READLINE */
 
+char **get_input(char *input, int buffsize) {
+    char **command = malloc(buffsize * sizeof(char *));
+    if (command == NULL) {
+        perror("malloc failed");
+        exit(1);
+    }
+
+    char *separator = " ";
+    char *parsed;
+    // FIXME avoid using this global var
+    command_index = 0;
+
+    parsed = strtok(input, separator);
+    while (parsed != NULL) {
+        command[command_index++] = parsed;
+        parsed = strtok(NULL, separator);
+    }
+
+    command[command_index] = NULL;
+    return command;
+}
+
 int main() {
-    char **command;
+    errno = 0;
+
+    command_index = 0;
+
     char *input;
     pid_t child_pid;
     int stat_loc;
     int startup_curr_cmd = 0;
-    /*int job_count = 0;*/
-
-    errno = 0;
+// ============================ jobs variable definitions in main() ==================================
+    activeJobs = 0;
+    jobsList = NULL;
+    groupID = getpgrp();
+// ============================ jobs variable definitions in main() (END) ==================================
 
     /* Setup info to be displayed at the prompt */
     char *user_name = getenv("USER");
@@ -135,6 +428,12 @@ int main() {
     sigemptyset(&s.sa_mask);
     s.sa_flags = SA_RESTART;
     sigaction(SIGINT, &s, NULL);
+
+// ============================ Job control signals in parent ==============================
+    signal(SIGTTOU, SIG_IGN);  //ttyout
+    signal(SIGTTIN, SIG_IGN);  //ttyin
+    signal(SIGCHLD, &signalHandler_child);
+// ============================ Job control signals in parent (END) ==============================
 
     while (1) {   
         if (sigsetjmp(env, 1) == 42) {
@@ -215,6 +514,89 @@ int main() {
             // Skip the fork
             continue;
         }
+
+// ======================= processing jobs commands==========================
+        if(strcmp("bg", command[0]) == 0)
+        {
+            if(command[1] == NULL)
+            {
+                //@return;
+                continue;
+            }
+            else
+            {
+                int jobID = atoi(command[1]);
+                JobsList* job = getJob(jobID, 0);
+                putJobBackground(job, 1);
+                //@return;
+                continue;
+            }
+        }
+
+        if(strcmp("fg", command[0]) == 0)
+        {
+            if(command[1] == NULL)
+            {
+                //@return;
+                continue;
+            }
+
+            int jobID = atoi(command[1]);
+            JobsList* job = getJob(jobID, 0);
+            if(job == NULL)
+            {
+                //@return;
+                continue;
+            }
+
+            if(job->status == SUSPENDED)
+            {
+                putJobForeground(job, 1);
+            }
+            else
+            {
+                putJobForeground(job, 0);
+            }
+
+            //@return;
+            continue;
+        }
+
+        if(strcmp("jobs", command[0]) == 0)
+        {
+            printJobs();
+            //@return;
+            continue;
+        }
+
+        if(strcmp("kill", command[0]) == 0)
+        {
+            if(command[1] == NULL)
+            {
+                //@return;
+                continue;
+            }
+            killJob(atoi(command[1]));
+            //@return;
+            continue;
+        }
+
+
+        if((strcmp(command[command_index - 1], "&") == 0))
+        {
+            command[--command_index] = NULL;
+            startJob(command, BACKGROUND);
+            //@return;
+            continue;
+       }
+       else
+       {
+            startJob(command, FOREGROUND);
+            //@return;
+            continue;
+       }
+
+// ====================== processing jobs commands (END) ========================
 
         child_pid = fork();
         if (child_pid <0) {
