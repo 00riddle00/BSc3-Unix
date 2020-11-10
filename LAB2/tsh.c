@@ -150,6 +150,7 @@ main()
 
     /* variables for jobs */
     active_jobs = 0;
+    char active_jobs_str[4];
     jobs_list = NULL;
     group_id = getpgrp();
 
@@ -189,6 +190,8 @@ main()
     /* --------------------------------- */
 
     while (1) {   
+        sprintf(active_jobs_str, "%d", active_jobs);
+
         if (sigsetjmp(env, 1) == 42) {
             printf("\n");
             continue;
@@ -212,23 +215,26 @@ main()
 
             // TODO optimize: check all the flags beforehand
             input = read_line(
+
                 str_replace(
                     str_replace(
                         str_replace(
                             str_replace(
                                 str_replace(
                                     str_replace(
-                                        prompt,
-                                        "%u",
-                                        user_name),
-                                    home_dir,
-                                    "~"),
-                                "%h",
-                                host_name),
-                            "%w", 
-                            getcwd(current_dir, 512) ),
-                        "%d", date_buffer),
-                    "%t", time_buffer),
+                                        str_replace(
+                                            prompt,
+                                            "%u",
+                                            user_name),
+                                        home_dir,
+                                        "~"),
+                                    "%h",
+                                    host_name),
+                                "%w", 
+                                getcwd(current_dir, 512) ),
+                            "%d", date_buffer),
+                        "%t", time_buffer),
+                    "%j", active_jobs_str),
 
                     cmd_buff_size
                 );
