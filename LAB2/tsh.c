@@ -11,7 +11,7 @@
 #include <setjmp.h>
 #include <time.h>
 
-#include "util.h"
+#include "utils.h"
 #include "jobs.h"
 
 /* macros */

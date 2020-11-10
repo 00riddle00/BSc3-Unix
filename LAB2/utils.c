@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "util.h"
+#include "utils.h"
 
 void 
 clear_screen(int do_it) 

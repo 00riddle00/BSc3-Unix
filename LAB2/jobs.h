@@ -1,4 +1,3 @@
-
 /* macros */
 #define MAX_LENGTH 100
 #define MAX_PIPES 10
