@@ -49,7 +49,14 @@ sigint_handler()
 }
 
 // TODO move to utils file
-#ifndef READLINE
+#ifdef READLINE
+char *
+read_line(char *prompt, int buffsize) 
+{
+    return readline(prompt);
+}
+
+#else
 char *
 read_line(char *prompt, int buffsize) 
 {
@@ -102,12 +109,6 @@ read_line(char *prompt, int buffsize)
     }
 
     return line;
-}
-#else
-char *
-read_line(char *prompt, int buffsize) 
-{
-    return readline(prompt);
 }
 #endif /* READLINE */
 
@@ -184,6 +185,7 @@ main()
     s.sa_flags = SA_RESTART;
     sigaction(SIGINT, &s, NULL);
 
+    // TODO change signal fn to sigaction
     signal(SIGTTOU, SIG_IGN);  // ttyout
     signal(SIGTTIN, SIG_IGN);  // ttyin
     signal(SIGCHLD, &signal_handler_child);
@@ -308,7 +310,8 @@ main()
             continue;
         }
 
-        if(strcmp("jobs", command[0]) == 0) {
+        if (strcmp(command[0], "jobs") == 0 ||
+            strcmp(command[0], alias_jobs) == 0) {
             print_jobs();
             continue;
         }

@@ -14,7 +14,7 @@ typedef struct Job {
     pid_t pgid;
     int status;
     struct Job *next;
-} JobsList;
+} JobsList; /* Linked list */
 
 /* function declarations */
 JobsList *add_job(pid_t, char *, int);

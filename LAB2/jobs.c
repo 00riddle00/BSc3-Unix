@@ -250,8 +250,12 @@ void
 print_jobs() 
 {
     JobsList *job = jobs_list;
+    printf("________________________________________________________________\n");
+    printf("| ID   | PID    | STATUS     | STATE | NAME OF EXEC            |\n");
+    printf("----------------------------------------------------------------\n");
     while (job != NULL) {
-        printf("%d\t%c\t%s\t%d\n", job->id, job->status, job->name, job->pgid);
+        printf("| [%d]    %-7d  %-11s  %-6c  %-24s|\n", job->id, job->pgid, "running", job->status, job->name);
         job = job->next;
      }
+    printf("----------------------------------------------------------------\n");
 }
