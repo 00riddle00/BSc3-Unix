@@ -11,29 +11,35 @@
 #include <setjmp.h>
 #include <time.h>
 
-#include "util.h"
+#include "utils.h"
 
 /* macros */
 #include "dbg.h" /* useful debugging macros */
 
 /* enums */
 enum { StylePrompt, StyleErrPrefix, StyleErrMsg, StyleErrInput }; /* style */
-enum { fg, bg, bold, uline, blink };                              /* style */
-
-/* function declarations */
-void sigint_handler();
-char *read_line(char *, int);
+enum { FG, BG, BOLD, UNDERLINE, BLINK };                          /* style */
 
 /* variables */
 static const int cmd_buff_size = 512;
 static sigjmp_buf env;
 static volatile sig_atomic_t jump_active = 0;
+char **command;
+int command_index;
+
+/* function declarations */
+/* TODO add param names on all fn declarations */
+void sigint_handler();
+char *read_line(char *, int);
+char **get_input(char *, int);
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
 
 /* function implementations */
-void sigint_handler() {
+void 
+sigint_handler() 
+{
     if (!jump_active) {
         return;
     }
@@ -41,15 +47,25 @@ void sigint_handler() {
     siglongjmp(env, 42);
 }
 
-#ifndef READLINE
-char *read_line(char *prompt, int buffsize) {
+// TODO move to utils file
+#ifdef READLINE
+char *
+read_line(char *prompt, int buffsize) 
+{
+    return readline(prompt);
+}
+
+#else
+char *
+read_line(char *prompt, int buffsize) 
+{
 
     printf("%s%s%s", 
-            set_style( style[StylePrompt][fg],
-                       style[StylePrompt][bg],
-                       style[StylePrompt][bold],
-                       style[StylePrompt][uline],
-                       style[StylePrompt][blink] ),
+            set_style( style[StylePrompt][FG],
+                       style[StylePrompt][BG],
+                       style[StylePrompt][BOLD],
+                       style[StylePrompt][UNDERLINE],
+                       style[StylePrompt][BLINK] ),
             prompt,
             reset_style() );
 
@@ -93,21 +109,44 @@ char *read_line(char *prompt, int buffsize) {
 
     return line;
 }
-#else
-char *read_line(char *prompt, int buffsize) {
-    return readline(prompt);
-}
 #endif /* READLINE */
 
-int main() {
-    char **command;
+// TODO move to utils file
+char **
+get_input(char *input, int buffsize) 
+{
+    char **command = malloc(buffsize * sizeof(char *));
+    if (command == NULL) {
+        perror("malloc failed");
+        exit(1);
+    }
+
+    char *separator = " ";
+    char *parsed;
+    // FIXME avoid using this global var
+    command_index = 0;
+
+    parsed = strtok(input, separator);
+    while (parsed != NULL) {
+        command[command_index++] = parsed;
+        parsed = strtok(NULL, separator);
+    }
+
+    command[command_index] = NULL;
+    return command;
+}
+
+int 
+main() 
+{
+    errno = 0;
+
+    command_index = 0;
+
     char *input;
     pid_t child_pid;
     int stat_loc;
     int startup_curr_cmd = 0;
-    /*int job_count = 0;*/
-
-    errno = 0;
 
     /* Setup info to be displayed at the prompt */
     char *user_name = getenv("USER");
@@ -124,17 +163,25 @@ int main() {
 
     time_t curr_time;
     char *time_str;
-    struct tm* time_info;
+    struct tm *time_info;
 
     char date_buffer[10];
     char time_buffer[5];
 
-    /* Setup SIGINT */
+    /* ------- signal handling --------- */
+
+    /* SIGINT */
     struct sigaction s;
     s.sa_handler = sigint_handler;
     sigemptyset(&s.sa_mask);
     s.sa_flags = SA_RESTART;
     sigaction(SIGINT, &s, NULL);
+
+    // TODO change signal fn to sigaction
+    signal(SIGTTOU, SIG_IGN);  // ttyout
+    signal(SIGTTIN, SIG_IGN);  // ttyin
+    signal(SIGCHLD, &signal_handler_child);
+    /* --------------------------------- */
 
     while (1) {   
         if (sigsetjmp(env, 1) == 42) {
@@ -160,23 +207,26 @@ int main() {
 
             // TODO optimize: check all the flags beforehand
             input = read_line(
+
                 str_replace(
                     str_replace(
                         str_replace(
                             str_replace(
                                 str_replace(
                                     str_replace(
-                                        prompt,
-                                        "%u",
-                                        user_name),
-                                    home_dir,
-                                    "~"),
-                                "%h",
-                                host_name),
-                            "%w", 
-                            getcwd(current_dir, 512) ),
-                        "%d", date_buffer),
-                    "%t", time_buffer),
+                                        str_replace(
+                                            prompt,
+                                            "%u",
+                                            user_name),
+                                        home_dir,
+                                        "~"),
+                                    "%h",
+                                    host_name),
+                                "%w", 
+                                getcwd(current_dir, 512) ),
+                            "%d", date_buffer),
+                        "%t", time_buffer),
+                    "%j", active_jobs_str),
 
                     cmd_buff_size
                 );
@@ -236,24 +286,24 @@ int main() {
                 // of "no such file or directory"
                 fprintf(stderr,
                         "%stsh: %s%s%s: %s%s%s%s\n", 
-                        set_style( style[StyleErrPrefix][fg],
-                                   style[StyleErrPrefix][bg],
-                                   style[StyleErrPrefix][bold],
-                                   style[StyleErrPrefix][uline],
-                                   style[StyleErrPrefix][blink] ),
+                        set_style( style[StyleErrPrefix][FG],
+                                   style[StyleErrPrefix][BG],
+                                   style[StyleErrPrefix][BOLD],
+                                   style[StyleErrPrefix][UNDERLINE],
+                                   style[StyleErrPrefix][BLINK] ),
                         reset_style(),
-                        set_style( style[StyleErrMsg][fg],
-                                   style[StyleErrMsg][bg],
-                                   style[StyleErrMsg][bold],
-                                   style[StyleErrMsg][uline],
-                                   style[StyleErrMsg][blink] ),
+                        set_style( style[StyleErrMsg][FG],
+                                   style[StyleErrMsg][BG],
+                                   style[StyleErrMsg][BOLD],
+                                   style[StyleErrMsg][UNDERLINE],
+                                   style[StyleErrMsg][BLINK] ),
                         strerror(errno),
                         reset_style(),
-                        set_style( style[StyleErrInput][fg],
-                                   style[StyleErrInput][bg],
-                                   style[StyleErrInput][bold],
-                                   style[StyleErrInput][uline],
-                                   style[StyleErrInput][blink] ),
+                        set_style( style[StyleErrInput][FG],
+                                   style[StyleErrInput][BG],
+                                   style[StyleErrInput][BOLD],
+                                   style[StyleErrInput][UNDERLINE],
+                                   style[StyleErrInput][BLINK] ),
                         command[0],
                         reset_style() );
 

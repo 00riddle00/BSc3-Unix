@@ -3,32 +3,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "util.h"
+#include "utils.h"
 
-char *str_replace(char *, char *, char *);
-
-char **get_input(char *input, int buffsize) {
-    char **command = malloc(buffsize * sizeof(char *));
-    if (command == NULL) {
-        perror("malloc failed");
-        exit(1);
-    }
-
-    char *separator = " ";
-    char *parsed;
-    int index = 0;
-
-    parsed = strtok(input, separator);
-    while (parsed != NULL) {
-        command[index++] = parsed;
-        parsed = strtok(NULL, separator);
-    }
-
-    command[index] = NULL;
-    return command;
-}
-
-void clear_screen(int do_it) {
+void 
+clear_screen(int do_it) 
+{
     if (do_it < 0 || do_it > 1) {
         printf("invalid argument to clear_screen()");
         exit(1);
@@ -45,7 +24,9 @@ void clear_screen(int do_it) {
     }
 }
 
-char *set_style(int fg, int bg, int bold, int uline, int blink) {
+char *
+set_style(int fg, int bg, int bold, int uline, int blink) 
+{
 
     fg    = (fg >= 0 && fg <= 255) ? fg   : -1;  /* ANSI: ESC[38;5;{0-255}m -> foreground */
     bg    = (bg >= 0 && bg <= 255) ? bg   : -1;  /* ANSI: ESC[48;5;{0-255}m -> background */
@@ -71,12 +52,16 @@ char *set_style(int fg, int bg, int bold, int uline, int blink) {
     return style_str;
 }
 
-char *reset_style() {
+char *
+reset_style() 
+{
     return "\x1b[0m";
 }
 
 // You must free the result if result is non-NULL.
-char *str_replace(char *orig, char *rep, char *with) {
+char *
+str_replace(char *orig, char *rep, char *with) 
+{
     char *result; // the return string
     char *ins;    // the next insert point
     char *tmp;    // varies

@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = tsh.c util.c
+SRC = tsh.c utils.c
 OBJ = ${SRC:.c=.o}
 
 all: options tsh
@@ -28,7 +28,7 @@ clean:
 dist: clean
 	mkdir -p tsh-${VERSION}
 	cp -R LICENSE Makefile README.md config.mk\
-		tsh.1 util.h ${SRC} tsh_{logo,prompt}.png tsh-${VERSION}
+		tsh.1 utils.h ${SRC} tsh_{logo,prompt}.png tsh-${VERSION}
 	tar -cf tsh-${VERSION}.tar tsh-${VERSION}
 	gzip tsh-${VERSION}.tar
 	rm -rf tsh-${VERSION}

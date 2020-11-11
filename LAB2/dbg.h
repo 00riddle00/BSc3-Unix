@@ -1,31 +1,25 @@
-#ifndef __dbg_h_
-#define __dbg_h_
+#ifndef __DBG_H_
+#define __DBG_H_
 
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
 
 #ifdef NDEBUG
-
-#define debug(M, ...)
+#define DEBUG(M, ...)
 #else
-#define debug(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define DEBUG(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 #endif
 
-#define clean_errno() (errno == 0 ? "None" : strerror(errno))
+#define CLEAN_ERRNO() (errno == 0 ? "None" : strerror(errno))
 
-#define log_err(M, ...) fprintf(stderr, "[ERROR] (%s:%d: errno: %s)" M "\n", __FILE__, __LINE__, clean_errno(), ##__VA_ARGS__)
+#define LOG_ERR(M, ...) fprintf(stderr, "[ERROR] (%s:%d: errno: %s)" M "\n", __FILE__, __LINE__, clean_errno(), ##__VA_ARGS__)
+#define LOG_WARN(M, ...) fprintf(stderr, "[WARN] (%s:%d: errno: %s)" M "\n", __FILE__, __LINE__, clean_errno(), ##__VA_ARGS__)
+#define LOG_INFO(M, ...) fprintf(stderr, "[INFO] (%s:%d) " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
-#define log_warn(M, ...) fprintf(stderr, "[WARN] (%s:%d: errno: %s)" M "\n", __FILE__, __LINE__, clean_errno(), ##__VA_ARGS__)
+#define CHECK(A, M, ...) if (!(A)) { log_err(M, ##__VA_ARGS__); errno = 0; goto error; }
+#define SENTINEL(M, ...) { log_err(M, ##__VA_ARGS__); errno = 0; goto error; }
 
-#define log_info(M, ...) fprintf(stderr, "[INFO] (%s:%d) " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
-
-#define check(A, M, ...) if (!(A)) { log_err(M, ##__VA_ARGS__); errno=0; goto error; }
-
-#define sentinel(M, ...) { log_err(M, ##__VA_ARGS__); errno=0; goto error; }
-
-#define check_mem(A) check((A), "Out of memory.")
-
-#define check_debug(A, M, ...) if((!A)) { debug(M, ##__VA_ARGS__); errno=0; goto error; }
-
+#define CHECK_MEM(A) check((A), "Out of memory.")
+#define CHECK_DEBUG(A, M, ...) if((!A)) { debug(M, ##__VA_ARGS__); errno = 0; goto error; }
 #endif
