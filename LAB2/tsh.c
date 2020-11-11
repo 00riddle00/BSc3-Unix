@@ -29,10 +29,9 @@ char **command;
 int command_index;
 
 /* function declarations */
-/* TODO add param names on all fn declarations */
 void sigint_handler();
-char *read_line(char *, int);
-char **get_input(char *, int);
+char *read_line(char *prompt, int buffsize);
+char **get_input(char *input, int buffsize);
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -278,8 +277,7 @@ main()
 
         /* ----------- processing job commands ---------- */
 
-        if(strcmp("bg", command[0]) == 0)
-        {
+        if(strcmp(command[0], "bg") == 0) {
             if(command[1] == NULL) {
                 continue;
             } else {
@@ -290,7 +288,7 @@ main()
             }
         }
 
-        if(strcmp("fg", command[0]) == 0) {
+        if(strcmp(command[0], "fg") == 0) {
             if(command[1] == NULL) {
                 continue;
             }
@@ -316,7 +314,7 @@ main()
             continue;
         }
 
-        if(strcmp("kill", command[0]) == 0) {
+        if(strcmp(command[0], "kill") == 0) {
             if(command[1] == NULL) {
                 continue;
             }

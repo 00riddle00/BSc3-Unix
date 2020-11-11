@@ -1,7 +1,4 @@
 /* macros */
-#define MAX_LENGTH 100
-#define MAX_PIPES 10
-#define MAX_ARGUMENTS 20
 #define FOREGROUND 'F'
 #define BACKGROUND 'B'
 #define SUSPENDED 'S'
@@ -17,16 +14,16 @@ typedef struct Job {
 } JobsList; /* Linked list */
 
 /* function declarations */
-JobsList *add_job(pid_t, char *, int);
-JobsList *del_job(JobsList *);
-JobsList *get_job(int, int);
-int change_job_status(int, int);
-void wait_job(JobsList *);
-void kill_job(int);
-void put_job_foreground(JobsList *, int);
-void put_job_background(JobsList *, int);
+JobsList *add_job(pid_t pgid, char *name, int status);
+JobsList *del_job(JobsList *job);
+JobsList *get_job(int key, int search_parameter);
+int change_job_status(int pid, int status);
+void wait_job(JobsList *job);
+void kill_job(int job_id);
+void put_job_foreground(JobsList *job, int continue_job);
+void put_job_background(JobsList *job, int continue_job);
 void signal_handler_child();
-void start_job(char *command[], int);
+void start_job(char *command[], int execution_mode);
 void print_jobs();
 
 /* variables */
