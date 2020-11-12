@@ -7,9 +7,6 @@
 #include "jobs.h"
 
 /* variables */
-int mode;
-pid_t group_id;
-
 int active_jobs;
 JobsList *jobs_list;
 
@@ -136,7 +133,7 @@ kill_job(int job_id)
 }
 
 void 
-put_job_foreground(JobsList *job, int continue_job) 
+put_job_foreground(JobsList *job, int continue_job, pid_t group_id) 
 {
     if(job == NULL) {
         return;
@@ -154,7 +151,7 @@ put_job_foreground(JobsList *job, int continue_job)
 }
 
 void 
-put_job_background(JobsList *job, int continue_job) 
+put_job_background(JobsList *job, int continue_job, pid_t group_id)
 {
     if(job == NULL) {
         return;
@@ -204,57 +201,18 @@ signal_handler_child()
 }
 
 void 
-start_job(char *command[], int execution_mode) 
-{
-    pid_t pid;
-    if((pid = fork()) == -1) {
-        perror("fork error");
-        exit(EXIT_FAILURE);
-    }
-    else if(pid == 0) {
-        signal(SIGINT, SIG_DFL);
-        signal(SIGQUIT, SIG_DFL);
-        signal(SIGTSTP, SIG_DFL);
-        signal(SIGCHLD, &signal_handler_child);
-        signal(SIGTTIN, SIG_DFL);
-        setpgrp();
-        if(execution_mode == FOREGROUND) {
-            tcsetpgrp(STDIN_FILENO, getpid());
-        }
-
-        if(execution_mode == BACKGROUND) {
-            printf("[%d] %d\n", ++active_jobs, (int) getpid());
-        }
-
-        if(execvp(*command, command) == -1) {
-            printf("Error. Command not found: %s\n", command[0]);
-        }
-            
-        exit(EXIT_SUCCESS);
-    } else {
-        setpgid(pid, pid);
-        jobs_list = add_job(pid, *(command), (int) execution_mode);
-        JobsList *job = get_job(pid, 1);
-        if(execution_mode == FOREGROUND) {
-             put_job_foreground(job, 0);
-        }
-
-        if(execution_mode == BACKGROUND) {
-            put_job_background(job, 0);
-        }
-    }
-
-}
-
-void 
 print_jobs() 
 {
     JobsList *job = jobs_list;
+    if (job == NULL) {
+        return;
+    }
+
     printf("________________________________________________________________\n");
     printf("| ID   | PID    | STATUS     | STATE | NAME OF EXEC            |\n");
     printf("----------------------------------------------------------------\n");
     while (job != NULL) {
-        printf("| [%d]    %-7d  %-11s  %-6c  %-24s|\n", job->id, job->pgid, "running", job->status, job->name);
+        printf("| [%d]    %-7d  %-11s  %-6c  %-24s|\n", job->id, job->pgid, "<status>", job->status, job->name);
         job = job->next;
      }
     printf("----------------------------------------------------------------\n");

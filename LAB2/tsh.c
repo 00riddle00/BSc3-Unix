@@ -27,6 +27,8 @@ static sigjmp_buf env;
 static volatile sig_atomic_t jump_active = 0;
 char **command;
 int command_index;
+pid_t group_id;
+int exec_mode;
 
 /* function declarations */
 void sigint_handler();
@@ -145,15 +147,13 @@ main()
 
     char *input;
     pid_t child_pid;
-    int stat_loc;
     int startup_curr_cmd = 0;
 
     /* variables for jobs */
     active_jobs = 0;
-    char active_jobs_str[4];
+    char active_jobs_str[4]; /* for printing job count */
     jobs_list = NULL;
     group_id = getpgrp();
-
 
     /* Setup info to be displayed at the prompt */
     char *user_name = getenv("USER");
@@ -187,10 +187,12 @@ main()
     // TODO change signal fn to sigaction
     signal(SIGTTOU, SIG_IGN);  // ttyout
     signal(SIGTTIN, SIG_IGN);  // ttyin
+    signal(SIGTSTP, SIG_IGN);  // ^Z
     signal(SIGCHLD, &signal_handler_child);
     /* --------------------------------- */
 
     while (1) {   
+		exec_mode = 0;
         sprintf(active_jobs_str, "%d", active_jobs);
 
         if (sigsetjmp(env, 1) == 42) {
@@ -283,7 +285,7 @@ main()
             } else {
                 int job_id = atoi(command[1]);
                 JobsList *job = get_job(job_id, 0);
-                put_job_background(job, 1);
+                put_job_background(job, 1, group_id);
                 continue;
             }
         }
@@ -300,9 +302,9 @@ main()
             }
 
             if(job->status == SUSPENDED) {
-                put_job_foreground(job, 1);
+                put_job_foreground(job, 1, group_id);
             } else {
-                put_job_foreground(job, 0);
+                put_job_foreground(job, 0, group_id);
             }
 
             continue;
@@ -322,36 +324,44 @@ main()
             continue;
         }
 
-        if((strcmp(command[command_index - 1], "&") == 0)) {
-            command[--command_index] = NULL;
-            start_job(command, BACKGROUND);
-            continue;
-        } else {
-            start_job(command, FOREGROUND);
-            continue;
-        }
         /* ---------------------------------------------- */
 
+        if((strcmp(command[command_index - 1], "&") == 0)) {
+            command[--command_index] = NULL;
+			exec_mode = BACKGROUND;
+        } else {
+			exec_mode = FOREGROUND;
+        }
+
         child_pid = fork();
-        if (child_pid <0) {
+        if (child_pid < 0) {
             perror("Fork failed");
             exit(1);
         }
 
         if (child_pid == 0) {
-            struct sigaction s;
-            s.sa_handler = sigint_handler;
-            sigemptyset(&s.sa_mask);
-            s.sa_flags = SA_RESTART;
-            sigaction(SIGINT, &s, NULL);
+			signal(SIGINT, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
+			signal(SIGTTOU, SIG_DFL);
+			signal(SIGTTIN, SIG_DFL);
+			signal(SIGTSTP, SIG_DFL);
+			signal(SIGCHLD, &signal_handler_child);
+			setpgrp();
 
-            /* Never returns if the call is successful */
+			if(exec_mode == FOREGROUND) {
+				tcsetpgrp(STDIN_FILENO, getpid());
+			}
+
+			if(exec_mode == BACKGROUND) {
+				printf("[%d] %d\n", ++active_jobs, (int) getpid());
+			}
+
             if (execvp(command[0], command) < 0) {
 
                 // TODO print "command not found" instead
                 // of "no such file or directory"
                 fprintf(stderr,
-                        "%stsh: %s%s%s: %s%s%s%s\n", 
+                        "%stsh: %s%scommand not found: %s%s%s%s\n", 
                         set_style( style[StyleErrPrefix][FG],
                                    style[StyleErrPrefix][BG],
                                    style[StyleErrPrefix][BOLD],
@@ -363,7 +373,6 @@ main()
                                    style[StyleErrMsg][BOLD],
                                    style[StyleErrMsg][UNDERLINE],
                                    style[StyleErrMsg][BLINK] ),
-                        strerror(errno),
                         reset_style(),
                         set_style( style[StyleErrInput][FG],
                                    style[StyleErrInput][BG],
@@ -373,16 +382,23 @@ main()
                         command[0],
                         reset_style() );
 
-                exit(1);
+                exit(0);
             }
         } else {
-            waitpid(child_pid, &stat_loc, WUNTRACED);
-        }
+			setpgid(child_pid, child_pid);
+			jobs_list = add_job(child_pid, *(command), (int) exec_mode);
+			JobsList *job = get_job(child_pid, 1);
+			if(exec_mode == FOREGROUND) {
+				 put_job_foreground(job, 0, group_id);
+			}
 
-        if (!input)
-            free(input);
-        if (!command)
-            free(command);
+			if(exec_mode == BACKGROUND) {
+				put_job_background(job, 0, group_id);
+			}
+		}
+
+		free(input);
+		free(command);
     }
 
     return 0;
