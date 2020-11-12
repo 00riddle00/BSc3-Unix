@@ -65,6 +65,7 @@ static const int style[][5]  = {
 
 static const char alias_cls[]  = "cls";
 static const char alias_exit[] = "q";
+static const char alias_jobs[] = "j";
 // TODO make this alias work
 static const char alias_ls[]   = "ls --color=auto";
 

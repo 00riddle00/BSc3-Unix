@@ -12,6 +12,7 @@
 #include <time.h>
 
 #include "utils.h"
+#include "jobs.h"
 
 /* macros */
 #include "dbg.h" /* useful debugging macros */
@@ -28,10 +29,9 @@ char **command;
 int command_index;
 
 /* function declarations */
-/* TODO add param names on all fn declarations */
 void sigint_handler();
-char *read_line(char *, int);
-char **get_input(char *, int);
+char *read_line(char *prompt, int buffsize);
+char **get_input(char *input, int buffsize);
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -148,6 +148,13 @@ main()
     int stat_loc;
     int startup_curr_cmd = 0;
 
+    /* variables for jobs */
+    active_jobs = 0;
+    char active_jobs_str[4];
+    jobs_list = NULL;
+    group_id = getpgrp();
+
+
     /* Setup info to be displayed at the prompt */
     char *user_name = getenv("USER");
 
@@ -184,6 +191,8 @@ main()
     /* --------------------------------- */
 
     while (1) {   
+        sprintf(active_jobs_str, "%d", active_jobs);
+
         if (sigsetjmp(env, 1) == 42) {
             printf("\n");
             continue;
@@ -265,6 +274,63 @@ main()
             // Skip the fork
             continue;
         }
+
+        /* ----------- processing job commands ---------- */
+
+        if(strcmp(command[0], "bg") == 0) {
+            if(command[1] == NULL) {
+                continue;
+            } else {
+                int job_id = atoi(command[1]);
+                JobsList *job = get_job(job_id, 0);
+                put_job_background(job, 1);
+                continue;
+            }
+        }
+
+        if(strcmp(command[0], "fg") == 0) {
+            if(command[1] == NULL) {
+                continue;
+            }
+
+            int job_id = atoi(command[1]);
+            JobsList *job = get_job(job_id, 0);
+            if(job == NULL) {
+                continue;
+            }
+
+            if(job->status == SUSPENDED) {
+                put_job_foreground(job, 1);
+            } else {
+                put_job_foreground(job, 0);
+            }
+
+            continue;
+        }
+
+        if (strcmp(command[0], "jobs") == 0 ||
+            strcmp(command[0], alias_jobs) == 0) {
+            print_jobs();
+            continue;
+        }
+
+        if(strcmp(command[0], "kill") == 0) {
+            if(command[1] == NULL) {
+                continue;
+            }
+            kill_job(atoi(command[1]));
+            continue;
+        }
+
+        if((strcmp(command[command_index - 1], "&") == 0)) {
+            command[--command_index] = NULL;
+            start_job(command, BACKGROUND);
+            continue;
+        } else {
+            start_job(command, FOREGROUND);
+            continue;
+        }
+        /* ---------------------------------------------- */
 
         child_pid = fork();
         if (child_pid <0) {
