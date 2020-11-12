@@ -6,9 +6,9 @@
 #include "utils.h"
 
 void 
-clear_screen(int do_it) 
+clear_screen(int force) 
 {
-    if (do_it < 0 || do_it > 1) {
+    if (force < 0 || force > 1) {
         printf("invalid argument to clear_screen()");
         exit(1);
     }
@@ -19,7 +19,7 @@ clear_screen(int do_it)
     if (first_time) {
         first_time = 0;
         write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
-    } else if (do_it) {
+    } else if (force) {
         write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
     }
 }

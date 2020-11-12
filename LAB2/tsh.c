@@ -134,6 +134,9 @@ get_input(char *input, int buffsize)
         parsed = strtok(NULL, separator);
     }
 
+    /* NULL terminated array, so that exec function
+     * (evecvp, execve, etc.) knows where the list
+     * of arguments ends */
     command[command_index] = NULL;
     return command;
 }
@@ -356,6 +359,11 @@ main()
 				printf("[%d] %d\n", ++active_jobs, (int) getpid());
 			}
 
+            /* Never returns if the call is successful
+             * 'v' in execvp means passing an array of arguments
+             * 'p' means do path searching for commands (ex. /usr/bin/ls)
+             * no 'e' means inherit the environment from the parent
+             */
             if (execvp(command[0], command) < 0) {
 
                 // TODO print "command not found" instead

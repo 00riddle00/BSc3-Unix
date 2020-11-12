@@ -7,7 +7,7 @@ VERSION = 0.1
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
-# Readline, comment it out if you don't want it
+# Readline, comment these lines out if you don't want it
 #READLINELIB  = -lreadline
 #READLINEFLAG = -DREADLINE
 
