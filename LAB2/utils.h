@@ -15,7 +15,17 @@ void clear_screen(int force);
  *
  * @return: ANSI escape sequence for styling text
  */
-char *set_style(int fg, int bg, int bold, int uline, int blink);
+char *create_style(int fg, int bg, int bold, int uline, int blink);
+
+/** function to apply style to string
+ *
+ * @param: "style_ansi" - string containing style escape sequences
+ * @param: "str" - string to be styled
+ *
+ * @return: string concatenated with styling escape sequences
+ *           and with reset style escape sequence at the end
+ */
+char *set_style(char* style_ansi, char* str);
 
 /** function to reset the color and style of text
  *

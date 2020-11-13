@@ -24,7 +24,7 @@ Prompt examples:
 "┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ "
 */
 
-static char prompt[] = "┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ ";
+static char *prompt = "┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ ";
 
 /*==================================
   Style
@@ -53,7 +53,7 @@ static const int col_white    = 7;
 
 /* make sure to use only the allowed values in parentheses */
 /* if bg color is set, the blink effect will not work      */
-static const int style[][5]  = {
+static const int styles[][5]  = {
     /*                        FG              BG           BOLD    UNDERLINE   BLINK    */
     /*                    (color/NONE)    (color/NONE)   (YES/NO)   (YES/NO)  (YES/NO)  */
     /*                                                                                  */

@@ -61,15 +61,7 @@ read_line(char *prompt, int buffsize)
 char *
 read_line(char *prompt, int buffsize) 
 {
-
-    printf("%s%s%s", 
-            set_style( style[StylePrompt][FG],
-                       style[StylePrompt][BG],
-                       style[StylePrompt][BOLD],
-                       style[StylePrompt][UNDERLINE],
-                       style[StylePrompt][BLINK] ),
-            prompt,
-            reset_style() );
+    printf(prompt);
 
     char *line = malloc(buffsize * sizeof(char));
     if (line == NULL) {
@@ -178,6 +170,14 @@ main()
     char date_buffer[10];
     char time_buffer[5];
 
+    /* Set up prompt style */
+    char *prompt_style = 
+        create_style( styles[StylePrompt][FG],
+                       styles[StylePrompt][BG],
+                       styles[StylePrompt][BOLD],
+                       styles[StylePrompt][UNDERLINE],
+                       styles[StylePrompt][BLINK] );
+
     /* ------- signal handling --------- */
 
     /* SIGINT */
@@ -220,8 +220,7 @@ main()
             strftime(time_buffer, 5, "%H:%M", time_info);
 
             // TODO optimize: check all the flags beforehand
-            input = read_line(
-
+            prompt = 
                 str_replace(
                     str_replace(
                         str_replace(
@@ -240,10 +239,11 @@ main()
                                 getcwd(current_dir, 512) ),
                             "%d", date_buffer),
                         "%t", time_buffer),
-                    "%j", active_jobs_str),
+                    "%j", active_jobs_str);
 
-                    cmd_buff_size
-                );
+            input = read_line(set_style(prompt_style, prompt), cmd_buff_size);
+
+
         }
 
         if (input == NULL) { /* Exit on Ctrl-D */
@@ -370,23 +370,23 @@ main()
                 // of "no such file or directory"
                 fprintf(stderr,
                         "%stsh: %s%scommand not found: %s%s%s%s\n", 
-                        set_style( style[StyleErrPrefix][FG],
-                                   style[StyleErrPrefix][BG],
-                                   style[StyleErrPrefix][BOLD],
-                                   style[StyleErrPrefix][UNDERLINE],
-                                   style[StyleErrPrefix][BLINK] ),
+                        create_style( styles[StyleErrPrefix][FG],
+                                      styles[StyleErrPrefix][BG],
+                                      styles[StyleErrPrefix][BOLD],
+                                      styles[StyleErrPrefix][UNDERLINE],
+                                      styles[StyleErrPrefix][BLINK] ),
                         reset_style(),
-                        set_style( style[StyleErrMsg][FG],
-                                   style[StyleErrMsg][BG],
-                                   style[StyleErrMsg][BOLD],
-                                   style[StyleErrMsg][UNDERLINE],
-                                   style[StyleErrMsg][BLINK] ),
+                        create_style( styles[StyleErrMsg][FG],
+                                      styles[StyleErrMsg][BG],
+                                      styles[StyleErrMsg][BOLD],
+                                      styles[StyleErrMsg][UNDERLINE],
+                                      styles[StyleErrMsg][BLINK] ),
                         reset_style(),
-                        set_style( style[StyleErrInput][FG],
-                                   style[StyleErrInput][BG],
-                                   style[StyleErrInput][BOLD],
-                                   style[StyleErrInput][UNDERLINE],
-                                   style[StyleErrInput][BLINK] ),
+                        create_style( styles[StyleErrInput][FG],
+                                      styles[StyleErrInput][BG],
+                                      styles[StyleErrInput][BOLD],
+                                      styles[StyleErrInput][UNDERLINE],
+                                      styles[StyleErrInput][BLINK] ),
                         command[0],
                         reset_style() );
 

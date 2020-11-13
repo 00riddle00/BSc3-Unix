@@ -25,7 +25,7 @@ clear_screen(int force)
 }
 
 char *
-set_style(int fg, int bg, int bold, int uline, int blink) 
+create_style(int fg, int bg, int bold, int uline, int blink) 
 {
 
     fg    = (fg >= 0 && fg <= 255) ? fg   : -1;  /* ANSI: ESC[38;5;{0-255}m -> foreground */
@@ -50,6 +50,12 @@ set_style(int fg, int bg, int bold, int uline, int blink)
              blink );
 
     return style_str;
+}
+
+char *set_style(char* style_ansi, char* str) {
+    char *styled_str = malloc(sizeof(char) * 256);
+    sprintf(styled_str, "%s%s%s", style_ansi, str, reset_style());
+    return styled_str;
 }
 
 char *
