@@ -166,8 +166,8 @@ main()
     char *time_str;
     struct tm *time_info;
 
-    char date_buffer[10];
-    char time_buffer[5];
+    char date_buffer[16];
+    char time_buffer[16];
 
     /* Set up prompt style */
     char *prompt_style = create_style(styles[StylePrompt]);
@@ -215,8 +215,8 @@ main()
             time_str[strlen(time_str)-1] = '\0';
             time_info = localtime(&curr_time);
 
-            strftime(date_buffer, 10, "%Y-%m-%d", time_info);
-            strftime(time_buffer, 5, "%H:%M", time_info);
+            strftime(date_buffer, 16, "%Y-%m-%d", time_info);
+            strftime(time_buffer, 16, "%H:%M", time_info);
 
             /* TODO optimize: check all the flags beforehand
                 plus some flags are not changed during shell runtime */
@@ -228,22 +228,16 @@ main()
                             str_replace(
                                 str_replace(
                                     str_replace(
-                                        str_replace(
-                                            prompt,
-                                            "%u",
-                                            user_name),
-                                        home_dir,
-                                        "~"),
-                                    "%h",
-                                    host_name),
-                                "%w", 
-                                getcwd(current_dir, 512) ),
+                                        str_replace(prompt,
+                                            "%u", user_name),
+                                        home_dir, "~"),
+                                    "%h", host_name),
+                                "%w", getcwd(current_dir, 512)),
                             "%d", date_buffer),
                         "%t", time_buffer),
                     "%j", active_jobs_str);
 
             input = read_line(set_style(prompt_style, prompt), cmd_buff_size);
-
         }
 
         if (input == NULL) { /* Exit on Ctrl-D */
