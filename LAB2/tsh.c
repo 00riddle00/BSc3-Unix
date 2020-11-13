@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#ifdef READLINE
-#include <readline/readline.h>
-#endif /* READLINE */
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <time.h>
+#ifdef READLINE
+#include <readline/readline.h>
+#endif /* READLINE */
 
 #include "utils.h"
 #include "jobs.h"
@@ -19,7 +19,6 @@
 
 /* enums */
 enum { StylePrompt, StyleErrPrefix, StyleErrMsg, StyleErrInput }; /* style */
-enum { FG, BG, BOLD, UNDERLINE, BLINK };                          /* style */
 
 /* variables */
 static const int cmd_buff_size = 512;
@@ -150,7 +149,7 @@ main()
     jobs_list = NULL;
     group_id = getpgrp();
 
-    /* Setup info to be displayed at the prompt */
+    /* Set up info to be displayed at the prompt */
     char *user_name = getenv("USER");
 
     // TODO get rid of magic numbers
@@ -171,12 +170,12 @@ main()
     char time_buffer[5];
 
     /* Set up prompt style */
-    char *prompt_style = 
-        create_style( styles[StylePrompt][FG],
-                       styles[StylePrompt][BG],
-                       styles[StylePrompt][BOLD],
-                       styles[StylePrompt][UNDERLINE],
-                       styles[StylePrompt][BLINK] );
+    char *prompt_style = create_style(styles[StylePrompt]);
+
+    /* Set up error styles */
+    char *err_prefix_style = create_style(styles[StyleErrPrefix]);
+    char *err_msg_style    = create_style(styles[StyleErrMsg]);
+    char *err_input_style  = create_style(styles[StyleErrInput]);
 
     /* ------- signal handling --------- */
 
@@ -219,7 +218,9 @@ main()
             strftime(date_buffer, 10, "%Y-%m-%d", time_info);
             strftime(time_buffer, 5, "%H:%M", time_info);
 
-            // TODO optimize: check all the flags beforehand
+            /* TODO optimize: check all the flags beforehand
+                plus some flags are not changed during shell runtime */
+
             prompt = 
                 str_replace(
                     str_replace(
@@ -242,7 +243,6 @@ main()
                     "%j", active_jobs_str);
 
             input = read_line(set_style(prompt_style, prompt), cmd_buff_size);
-
 
         }
 
@@ -365,31 +365,11 @@ main()
              * no 'e' means inherit the environment from the parent
              */
             if (execvp(command[0], command) < 0) {
-
-                // TODO print "command not found" instead
-                // of "no such file or directory"
-                fprintf(stderr,
-                        "%stsh: %s%scommand not found: %s%s%s%s\n", 
-                        create_style( styles[StyleErrPrefix][FG],
-                                      styles[StyleErrPrefix][BG],
-                                      styles[StyleErrPrefix][BOLD],
-                                      styles[StyleErrPrefix][UNDERLINE],
-                                      styles[StyleErrPrefix][BLINK] ),
-                        reset_style(),
-                        create_style( styles[StyleErrMsg][FG],
-                                      styles[StyleErrMsg][BG],
-                                      styles[StyleErrMsg][BOLD],
-                                      styles[StyleErrMsg][UNDERLINE],
-                                      styles[StyleErrMsg][BLINK] ),
-                        reset_style(),
-                        create_style( styles[StyleErrInput][FG],
-                                      styles[StyleErrInput][BG],
-                                      styles[StyleErrInput][BOLD],
-                                      styles[StyleErrInput][UNDERLINE],
-                                      styles[StyleErrInput][BLINK] ),
-                        command[0],
-                        reset_style() );
-
+                fprintf( stderr,
+                         "%s%s%s\n", 
+                         set_style(err_prefix_style, "tsh: "),
+                         set_style(err_msg_style, "command not found: "),
+                         set_style(err_input_style, command[0]) );
                 exit(0);
             }
         } else {

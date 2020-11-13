@@ -25,14 +25,13 @@ clear_screen(int force)
 }
 
 char *
-create_style(int fg, int bg, int bold, int uline, int blink) 
+create_style(const int *style)
 {
-
-    fg    = (fg >= 0 && fg <= 255) ? fg   : -1;  /* ANSI: ESC[38;5;{0-255}m -> foreground */
-    bg    = (bg >= 0 && bg <= 255) ? bg   : -1;  /* ANSI: ESC[48;5;{0-255}m -> background */
-    bold  = (bold  == 1)           ? 1    : -1;  /* ANSI: ESC[1m            -> bold       */
-    uline = (uline == 1)           ? 4    : -1;  /* ANSI: ESC[4m            -> underline  */
-    blink = (blink == 1)           ? 5    : -1;  /* ANSI: ESC[5             -> blink      */
+    int _fg    = (style[FG] >= 0 && style[FG] <= 255) ? style[FG]   : -1;  /* ANSI: ESC[38;5;{0-255}m -> foreground */
+    int _bg    = (style[BG] >= 0 && style[BG] <= 255) ? style[BG]   : -1;  /* ANSI: ESC[48;5;{0-255}m -> background */
+    int _bold  = (style[BOLD]  == 1)                  ? 1           : -1;  /* ANSI: ESC[1m            -> bold       */
+    int _uline = (style[UNDERLINE] == 1)              ? 4           : -1;  /* ANSI: ESC[4m            -> underline  */
+    int _blink = (style[BLINK] == 1)                  ? 5           : -1;  /* ANSI: ESC[5             -> blink      */
 
     // TODO avoid magic numbers
     char *style_str = malloc(sizeof(char) * 64);
@@ -43,25 +42,19 @@ create_style(int fg, int bg, int bold, int uline, int blink)
              "\x1b[%dm"\
              "\x1b[%dm"\
              "\x1b[%dm",
-             fg,
-             bg,
-             bold,
-             uline,
-             blink );
+             _fg,
+             _bg,
+             _bold,
+             _uline,
+             _blink );
 
     return style_str;
 }
 
 char *set_style(char* style_ansi, char* str) {
     char *styled_str = malloc(sizeof(char) * 256);
-    sprintf(styled_str, "%s%s%s", style_ansi, str, reset_style());
+    sprintf(styled_str, "%s%s%s", style_ansi, str, RESET_STYLE);
     return styled_str;
-}
-
-char *
-reset_style() 
-{
-    return "\x1b[0m";
 }
 
 // You must free the result if result is non-NULL.

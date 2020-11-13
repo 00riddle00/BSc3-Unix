@@ -1,3 +1,10 @@
+/* macros */
+/* resets the color and style of text */
+#define RESET_STYLE "\x1b[0m"
+
+/* enums */
+enum { FG, BG, BOLD, UNDERLINE, BLINK }; /* style */
+
 /* function declarations */
 
 /** function to clear the screen on terminal emulator
@@ -8,14 +15,16 @@
  */
 void clear_screen(int force);
 
-/** function to colorize and style text in the terminal
+/** function to create ANSI escape sequence for 
+ *   colorizing and styling text in the terminal
  *
- * @params: numeric values for color and style options
- *           taken from config.h (customization file)
+ * @param: "style" array containing numeric values for color
+ *          and style options, ie. one of the elements from
+ *          styles multi-array defined in config.h (customization file)
  *
  * @return: ANSI escape sequence for styling text
  */
-char *create_style(int fg, int bg, int bold, int uline, int blink);
+char *create_style(const int *style);
 
 /** function to apply style to string
  *
@@ -26,12 +35,6 @@ char *create_style(int fg, int bg, int bold, int uline, int blink);
  *           and with reset style escape sequence at the end
  */
 char *set_style(char* style_ansi, char* str);
-
-/** function to reset the color and style of text
- *
- * @return: ANSI escape sequence
- */
-char *reset_style();
 
 /** function to replace one pattern with another in a string
  *
