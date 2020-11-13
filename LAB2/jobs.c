@@ -179,18 +179,18 @@ signal_handler_child()
 
         if (WIFEXITED(termination_status)) {
             if (job->status == BACKGROUND) {
-                printf("\n[%d]+  Done\t   %s\n", job->id, job->name);
+                printf("\n[%d]+  done    %s\n", job->id, job->name);
                 jobs_list = del_job(job);
             }
         }
         else if (WIFSIGNALED(termination_status)) {
-            printf("\n[%d]+  KILLED\t   %s\n", job->id, job->name);
+            printf("\n[%d]+  terminated    %s\n", job->id, job->name);
             jobs_list = del_job(job);
         }
         else if (WIFSTOPPED(termination_status)) {
             tcsetpgrp(STDIN_FILENO, job->pgid);
             change_job_status(pid, SUSPENDED);
-            printf("\n[%d]+   stopped\t   %s\n", active_jobs, job->name);
+            printf("\n[%d]+   suspended    %s\n", active_jobs, job->name);
             return;
         } else {
             if (job->status == BACKGROUND) {
@@ -212,7 +212,13 @@ print_jobs()
     printf("| ID   | PID    | STATUS     | STATE | NAME OF EXEC            |\n");
     printf("----------------------------------------------------------------\n");
     while (job != NULL) {
-        printf("| [%d]    %-7d  %-11s  %-6c  %-24s|\n", job->id, job->pgid, "<status>", job->status, job->name);
+        printf("| [%d]    %-7d  %-11s  %-6s  %-24s|\n", 
+                job->id, 
+                job->pgid, 
+                statuses[job->status][0], 
+                statuses[job->status][1], 
+                job->name);
+
         job = job->next;
      }
     printf("----------------------------------------------------------------\n");

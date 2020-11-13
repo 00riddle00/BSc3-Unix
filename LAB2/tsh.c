@@ -73,6 +73,9 @@ read_line(char *prompt, int buffsize)
 
     // Read one line
     for (;;) {
+        /* "stdin" is a default FILE pointer 
+         * (FILE * as defined by the standard c library)
+         *  used to get input from standard in. */
         int c = fgetc(stdin);
 
         if (c == EOF) {
@@ -147,6 +150,8 @@ main()
     active_jobs = 0;
     char active_jobs_str[4]; /* for printing job count */
     jobs_list = NULL;
+
+    /* retrieving the calling process's PGID */
     group_id = getpgrp();
 
     /* Set up info to be displayed at the prompt */
@@ -336,16 +341,32 @@ main()
             exit(1);
         }
 
-        if (child_pid == 0) {
+        if (child_pid == 0) { /* child process */
 			signal(SIGINT, SIG_DFL);
 			signal(SIGQUIT, SIG_DFL);
 			signal(SIGTTOU, SIG_DFL);
 			signal(SIGTTIN, SIG_DFL);
 			signal(SIGTSTP, SIG_DFL);
 			signal(SIGCHLD, &signal_handler_child);
-			setpgrp();
+
+            /* "int setpgid(pid_t pid, pid_t pgid)"
+            * function sets the PGID of the process specified by pid to pgid.
+            * If pid = 0, then the process ID of the calling process is used.
+            * If pgid = 0, then the PGID of the process specified by pid is made
+            * the same as its process ID. */
+            setpgid(0,0);
 
 			if(exec_mode == FOREGROUND) {
+
+                /* "int tcsetpgrp (int fd, pid_t pgid)"
+                 *  function is used to set a terminal’s foreground process group ID. 
+                 *  "fd" is a descriptor which specifies the terminal.
+                 *  (STDIN_FILENO is the default standard input 
+                 *  file descriptor number which is 0).
+                 *  "pgid" specifies the process group. 
+                 *  The calling process must be a member 
+                 *  of the same session as pgid and must 
+                 *  have the same controlling terminal. */
 				tcsetpgrp(STDIN_FILENO, getpid());
 			}
 
@@ -356,8 +377,7 @@ main()
             /* Never returns if the call is successful
              * 'v' in execvp means passing an array of arguments
              * 'p' means do path searching for commands (ex. /usr/bin/ls)
-             * no 'e' means inherit the environment from the parent
-             */
+             * no 'e' means inherit the environment from the parent */
             if (execvp(command[0], command) < 0) {
                 fprintf( stderr,
                          "%s%s%s\n", 
@@ -366,7 +386,8 @@ main()
                          set_style(err_input_style, command[0]) );
                 exit(0);
             }
-        } else {
+        } else { /* parent process */
+			signal(SIGINT, SIG_DFL);
 			setpgid(child_pid, child_pid);
 			jobs_list = add_job(child_pid, *(command), (int) exec_mode);
 			JobsList *job = get_job(child_pid, 1);

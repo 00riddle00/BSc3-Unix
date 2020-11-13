@@ -1,7 +1,7 @@
 /* macros */
-#define FOREGROUND 'F'
-#define BACKGROUND 'B'
-#define SUSPENDED  'S'
+#define FOREGROUND 0
+#define BACKGROUND 1
+#define SUSPENDED  2
 
 /* structs */
 typedef struct Job {
@@ -12,6 +12,16 @@ typedef struct Job {
     int status;
     struct Job *next;
 } JobsList; /* Linked list */
+
+/* variables */
+extern int active_jobs;
+extern JobsList *jobs_list;
+
+static const char statuses[][2][16] = {
+    [FOREGROUND] = { "running",   "S"},
+    [BACKGROUND] = { "running",   "S"},
+    [SUSPENDED]  = { "suspended", "T"},
+};
 
 /* function declarations */
 JobsList *add_job(pid_t pgid, char *name, int status);
@@ -25,6 +35,3 @@ void put_job_background(JobsList *job, int continue_job, pid_t group_id);
 void signal_handler_child();
 void print_jobs();
 
-/* variables */
-extern int active_jobs;
-extern JobsList *jobs_list;
