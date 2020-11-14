@@ -322,9 +322,10 @@ main()
             continue;
         }
 
-        /* kill a job */
+        /* kill a job (with SIGTERM) */
         if(strcmp(command[0], "kill") == 0) {
 
+            /* make "kill" accept only one argument */
             if(command[2] != NULL) {
                 printf("kill: usage: 'kill %%<job_id>'\n");
                 continue;
@@ -345,9 +346,6 @@ main()
                         }
                         continue;
                     }
-                } else {
-                    printf("kill: not enough arguments\n");
-                    continue;
                 } 
             }
         }
