@@ -321,11 +321,32 @@ main()
         }
 
         if(strcmp(command[0], "kill") == 0) {
-            if(command[1] == NULL) {
+
+            if(command[2] != NULL) {
+                printf("kill: usage: 'kill %%{job_id}'\n");
                 continue;
             }
-            kill_job(atoi(command[1]));
-            continue;
+
+            if(command[1] != NULL) {
+                if (strchr(command[1]++, '%')) {
+                    if (*command[1] == '\0') {
+                        // TODO: kill latest process
+                        printf("kill: usage: 'kill %%{job_id}'\n");
+                        continue;
+                    } else {
+                        int cmd = atoi(command[1]);
+                        if (cmd != 0) {
+                            kill_job(cmd);
+                        } else {
+                            printf("kill: usage: 'kill %%{job_id}'\n");
+                        }
+                        continue;
+                    }
+                } else {
+                    printf("kill: not enough arguments\n");
+                    continue;
+                } 
+            }
         }
 
         /* ---------------------------------------------- */
@@ -361,17 +382,24 @@ main()
 			if(exec_mode == FOREGROUND) {
 
                 /* "int tcsetpgrp (int fd, pid_t pgid)"
-                 *  function is used to set a terminal’s foreground process group ID. 
+                 *  function is used to set a terminal’s 
+                 *  foreground process group ID. 
+                 *
                  *  "fd" is a descriptor which specifies the terminal.
                  *  (STDIN_FILENO is the default standard input 
                  *  file descriptor number which is 0).
+                 *
                  *  "pgid" specifies the process group. 
+                 *
                  *  The calling process must be a member 
                  *  of the same session as pgid and must 
                  *  have the same controlling terminal. */
 				tcsetpgrp(STDIN_FILENO, getpid());
 			}
 
+            /* notify about job being put in the background,
+             * printing its id and pid, for example: 
+             * [1] 248601 */
 			if(exec_mode == BACKGROUND) {
 				printf("[%d] %d\n", ++active_jobs, (int) getpid());
 			}

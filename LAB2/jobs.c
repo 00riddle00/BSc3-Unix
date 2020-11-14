@@ -128,7 +128,11 @@ kill_job(int job_id)
 {
     if(jobs_list != NULL) {
         JobsList *job = get_job(job_id, 0);
-        kill(job->pgid, SIGKILL);
+        if (job != NULL) {
+            kill(job->pgid, SIGKILL);
+        } else {
+            printf("kill: %%%d: no such job\n", job_id);
+        }
     }   
 }
 
