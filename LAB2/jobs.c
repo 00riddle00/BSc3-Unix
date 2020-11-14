@@ -15,7 +15,7 @@ JobsList *
 add_job(pid_t pgid, char *name, int status) 
 {
     JobsList *new_job = malloc(sizeof(JobsList));
-    new_job->name = (char *) malloc(sizeof(name));
+    new_job->name = (char *) malloc(1024);
     new_job->name = strcpy(new_job->name, name);
     new_job->pgid = pgid;
     new_job->status = status;
