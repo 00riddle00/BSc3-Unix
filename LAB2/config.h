@@ -12,12 +12,33 @@
 ==================================*/
 
 /*
+---------------------
+  info placeholders
+---------------------
 %u : the username of the current user
 %h : hostname
 %w : current working directory, with $HOME abbreviated with a tilde
 %d : current date in YYYY-MM-DD format
 %t : current time in 24-hour HH:MM format
 %j : number of jobs currently managed by the shell
+
+-----------------------
+  color placeholders
+-----------------------
+Only these eight colors are available for placeholders:
+
+${col_black}
+${col_white}
+${col_red}
+${col_green}
+${col_blue}
+${col_yellow}
+${col_purple}
+${col_aqua}
+
+However, you can also color the whole prompt with 
+any one of 256 colors (see Text Style section).
+-----------------------
 
 Prompt examples:
 
@@ -26,8 +47,9 @@ Prompt examples:
 "┌─{~tsh~}雷[%d]雷[%u@%h]雷[%w]>\n└─╼ "
 "┌─{ tsh}[ %d][ %u@%h][ %w]>\n└─╼ "
 "┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ "
+"┌─{ tsh}[ %d][ %t]%{col_magenta}[ %u@%h][ %w]%{col_green}[華 %j]>\n%{col_blue}└─╼ ";
 */
-static char *prompt = "┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ ";
+static char *prompt = "┌─{ tsh}[ %d][ %t]${col_purple}[ %u@%h][ %w]${col_green}[華 %j]>\n${col_blue}└─╼ ";
 
 /*==================================
   Aliases
@@ -72,26 +94,38 @@ static const char startup[][512] = {
   Text style
 ==================================*/
 
+/* ANSI color codes for defining 256 
+ * colors are used. For the complete 
+ * color table as well as for further 
+ * information on ANSI escape codes, 
+ * see COLORS.md */
+static const int col_black    = 0;
+static const int col_maroon   = 1;
+static const int col_green    = 2;
+static const int col_olive    = 3;
+static const int col_navy     = 4;
+static const int col_purple   = 5;
+static const int col_teal     = 6;
+static const int col_silver   = 7;
+
+static const int col_grey     = 8;
+static const int col_red      = 9;
+static const int col_lime     = 10;
+static const int col_yellow   = 11;
+static const int col_blue     = 12;
+static const int col_fuchsia  = 13;
+static const int col_aqua     = 14;
+static const int col_white    = 15;
+/* ... */
+/* ... */
+static const int col_orchid   = 170;
+/* ... */
+/* ... */
+static const int col_grey93   = 255;
+
 #define YES    1
 #define NO    -1
 #define NONE  -1
-
-/* ANSI color codes for defining 256 
- * colors are used. First 8 colors
- * correspond to the standard 8-bit
- * colors (listed below). For the 
- * complete color table as well as 
- * for further information on ANSI
- * escape codes, see COLORS.md */
-
-static const int col_black    = 0;
-static const int col_red      = 1;
-static const int col_green    = 2;
-static const int col_yellow   = 3;
-static const int col_blue     = 4;
-static const int col_magenta  = 5;
-static const int col_cyan     = 6;
-static const int col_white    = 7;
 
 /* make sure to use only the allowed values in parentheses */
 /* if bg color is set, the blink effect will not work      */
@@ -100,7 +134,7 @@ static const int styles[][5]  = {
     /*                    (color/NONE)    (color/NONE)   (YES/NO)   (YES/NO)  (YES/NO)  */
     /*                                                                                  */
     [StylePrompt]      = { col_blue,         NONE,         YES,       NO,       NO      },
-    [StyleErrPrefix]   = { col_cyan,         NONE,         YES,       NO,       NO      },
+    [StyleErrPrefix]   = { col_aqua,         NONE,         YES,       NO,       NO      },
     [StyleErrMsg]      = { col_red,          NONE,         YES,       NO,       NO      }, 
     [StyleErrInput]    = { col_white,        col_black,    NO,        NO,       NO      }, 
 };

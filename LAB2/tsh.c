@@ -228,23 +228,50 @@ main()
             /* TODO optimize: check all the flags beforehand
                 plus some flags are not changed during shell runtime */
 
-            prompt = 
-                str_replace(
-                    str_replace(
-                        str_replace(
-                            str_replace(
-                                str_replace(
-                                    str_replace(
-                                        str_replace(prompt,
-                                            "%u", user_name),
-                                        home_dir, "~"),
-                                    "%h", host_name),
-                                "%w", getcwd(current_dir, 512)),
-                            "%d", date_buffer),
-                        "%t", time_buffer),
-                    "%j", active_jobs_str);
+        char* curr_prompt;
 
-            input = read_line(set_style(prompt_style, prompt), cmd_buff_size);
+        /* TODO move those str_replace() calls 
+         * which do not change over shell's 
+         * runtime outside of while loop.
+         */
+        curr_prompt = 
+            str_replace(
+            str_replace(
+            str_replace(
+            str_replace(
+            str_replace(
+            str_replace(
+            str_replace(
+            str_replace(
+
+            str_replace(
+            str_replace(
+            str_replace(
+            str_replace(
+            str_replace(
+            str_replace(
+            str_replace(
+
+                prompt, 
+
+            "%u",     user_name),
+            "%h",     host_name),
+            "%w",     getcwd(current_dir, 512)),
+            home_dir, "~"),
+            "%d",     date_buffer),
+            "%t",     time_buffer),
+            "%j",     active_jobs_str),
+
+            "${col_black}",  get_fg_color(col_black)),
+            "${col_white}",  get_fg_color(col_white)),
+            "${col_red}",    get_fg_color(col_red)),
+            "${col_green}",  get_fg_color(col_green)),
+            "${col_blue}",   get_fg_color(col_blue)),
+            "${col_yellow}", get_fg_color(col_yellow)),
+            "${col_purple}", get_fg_color(col_purple)),
+            "${col_aqua}",   get_fg_color(col_aqua));
+
+            input = read_line(set_style(prompt_style, curr_prompt), cmd_buff_size);
         }
 
         if (input == NULL) { /* Exit on Ctrl-D */

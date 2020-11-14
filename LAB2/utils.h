@@ -1,4 +1,5 @@
 /* macros */
+
 /* resets the color and style of text */
 #define RESET_STYLE "\x1b[0m"
 
@@ -35,6 +36,14 @@ char *create_style(const int *style);
  *           and with reset style escape sequence at the end
  */
 char *set_style(char* style_ansi, char* str);
+
+/** function to get the string representing foreground color
+ * 
+ * @param: "col256_no" - color's number (out of 256, see COLORS.md)
+ * 
+ * @return: ANSI escape sequence for fg color
+ */
+char *get_fg_color(int col256_no);
 
 /** function to replace one pattern with another in a string
  *

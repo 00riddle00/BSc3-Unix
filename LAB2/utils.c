@@ -57,6 +57,12 @@ char *set_style(char* style_ansi, char* str) {
     return styled_str;
 }
 
+char *get_fg_color(int col256_no) {
+    char* color_str = malloc(sizeof(char) * 16);
+    sprintf(color_str, "\x1b[38;5;%dm", col256_no);
+    return color_str;
+}
+
 // You must free the result if result is non-NULL.
 char *
 str_replace(char *orig, char *rep, char *with) 
