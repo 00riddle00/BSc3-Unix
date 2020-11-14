@@ -110,18 +110,41 @@ change_job_status(int pid, int status)
     }
 }
 
+/* this function is used 
+ * only with a foreground job */
 void 
 wait_job(JobsList *job) 
 {
     int termination_status;
+
+    /* "pid_t waitpid (pid_t pid, int *status-ptr, int options)"
+     *
+     * this function is used to request status information from a child 
+     * process. Normally, the calling process is suspended until the 
+     * child process makes status information available by terminating.
+     *
+     * "pid" - child's process' process ID
+     *
+     * "status-ptr" points to an object storing the status information 
+     * from the child process, unless status-ptr is a null pointer
+     * (as is the case here).
+     *
+     * "options" argument is a bit mask. WNOHANG flag indicates that 
+     * the parent process shouldn’t wait.
+     *
+     * The return value is normally the process ID of the child 
+     * process whose status is reported. However, WNOHANG option 
+     * means waitpid will return zero instead of blocking. This lets
+     * checking if the process got suspended.
+     */
     while (waitpid(job->pgid, &termination_status, WNOHANG) == 0) {
         if(job->status == SUSPENDED) {
             return;
         }
     }
+    /* delete the job after it is finished */
     jobs_list = del_job(job);
 }
-
 
 void 
 kill_job(int job_id) 

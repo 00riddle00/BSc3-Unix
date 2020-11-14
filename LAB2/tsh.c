@@ -45,7 +45,6 @@ sigint_handler()
         return;
     }
     // TODO avoid magic numbers
-    printf("SIGINT is called!");
     siglongjmp(env, 42);
 }
 
@@ -380,15 +379,17 @@ main()
 			signal(SIGCHLD, &signal_handler_child);
 
             /* "int setpgid(pid_t pid, pid_t pgid)"
-            * function sets the PGID of the process specified by pid to pgid.
-            * If pid = 0, then the process ID of the calling process is used.
-            * If pgid = 0, then the PGID of the process specified by pid is made
-            * the same as its process ID. 
-            *
-            * this command makes the current child's
-            * process group be the same as child's pid.
-            * This lets the child be the leader of the 
-            * group (ie. the current job) */
+             *
+             * this function sets the PGID of the process specified by pid to pgid.
+             * If "pid" = 0, then the process ID of the calling process is used.
+             * If "pgid" = 0, then the PGID of the process specified by pid is made
+             * the same as its process ID. 
+             *
+             * this command makes the current child's
+             * process group be the same as child's pid.
+             * This lets the child be the leader of the 
+             * group (ie. the current job)
+             */
             setpgid(0,0);
 
 			if(exec_mode == FOREGROUND) {

@@ -7,6 +7,10 @@
 /* See LICENSE file for copyright and license details. */
 
 
+/*==================================
+  Prompt
+==================================*/
+
 /*
 %u : the username of the current user
 %h : hostname
@@ -26,7 +30,46 @@ Prompt examples:
 static char *prompt = "┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ ";
 
 /*==================================
-  Style
+  Aliases
+==================================*/
+
+static const char alias_cls[]  = "c";
+static const char alias_exit[] = "q";
+static const char alias_jobs[] = "j";
+
+/*==================================
+  Startup
+==================================*/
+
+/* startup array's size. The number of commands 
+ * in the array must be equal to it. */
+static const int startup_cmd_count = 3;
+
+/* startup array (startup commands can be added here) */
+static const char startup[][512] = {
+
+    //"neofetch", 
+    
+    "echo -e \x1b[0;36m\x1b[1m===========================================",
+
+    "figlet |==tsh==|",
+    
+    /*
+    "echo  ._. . . . . . ._. . . ._. . . . . . . . ._\n"
+          "| |_____ _____| |_ ___| |__ ._____ _____| |\n"
+          "| |_____|_____| __/ __| '_ \\|_____|_____| |\n"
+          "| |_____|_____| |_\\__ \\ | | |_____|_____| |\n"
+          "| | . . . . . .\\__|___/_| |_|...........| |\n"
+          "|_| . . . . . . . . . . . . . . . . . . |_|",
+    */
+
+    "echo ===========================================\n"
+          "---Welcome to tsh - a minimal UNIX shell!--\n"
+          "===========================================",
+};
+
+/*==================================
+  Text style
 ==================================*/
 
 #define YES    1
@@ -60,40 +103,5 @@ static const int styles[][5]  = {
     [StyleErrPrefix]   = { col_cyan,         NONE,         YES,       NO,       NO      },
     [StyleErrMsg]      = { col_red,          NONE,         YES,       NO,       NO      }, 
     [StyleErrInput]    = { col_white,        col_black,    NO,        NO,       NO      }, 
-};
-
-static const char alias_cls[]  = "c";
-static const char alias_exit[] = "q";
-static const char alias_jobs[] = "j";
-
-/*==================================
-  Startup
-==================================*/
-
-/* startup array's size The number of commands 
- * in the array must be equal to it. */
-static const int startup_cmd_count = 3;
-
-/* startup array (startup commands can be added here) */
-static const char startup[][512] = {
-
-    //"neofetch", 
-    
-    "echo -e \x1b[0;36m\x1b[1m===========================================",
-
-    "figlet |==tsh==|",
-    
-    /*
-    "echo  ._. . . . . . ._. . . ._. . . . . . . . ._\n"
-          "| |_____ _____| |_ ___| |__ ._____ _____| |\n"
-          "| |_____|_____| __/ __| '_ \\|_____|_____| |\n"
-          "| |_____|_____| |_\\__ \\ | | |_____|_____| |\n"
-          "| | . . . . . .\\__|___/_| |_|...........| |\n"
-          "|_| . . . . . . . . . . . . . . . . . . |_|",
-    */
-
-    "echo ===========================================\n"
-          "---Welcome to tsh - a minimal UNIX shell!--\n"
-          "===========================================",
 };
 
