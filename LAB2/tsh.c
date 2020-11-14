@@ -150,6 +150,7 @@ main()
     active_jobs = 0;
     char active_jobs_str[4]; /* for printing job count */
     jobs_list = NULL;
+    char job_name[cmd_buff_size];
 
     /* retrieving the calling process's PGID */
     group_id = getpgrp();
@@ -200,6 +201,7 @@ main()
 
     while (1) {   
 		exec_mode = 0;
+        job_name[0] = '\0';
         sprintf(active_jobs_str, "%d", active_jobs);
 
         if (sigsetjmp(env, 1) == 42) {
@@ -389,7 +391,15 @@ main()
         } else { /* parent process */
 			signal(SIGINT, SIG_DFL);
 			setpgid(child_pid, child_pid);
-			jobs_list = add_job(child_pid, *(command), (int) exec_mode);
+
+            int i = 0;
+            while (i != command_index) {
+                strcat(job_name, command[i]);
+                strcat(job_name, " ");
+                i++;
+            }
+
+			jobs_list = add_job(child_pid, job_name, (int) exec_mode);
 			JobsList *job = get_job(child_pid, 1);
 			if(exec_mode == FOREGROUND) {
 				 put_job_foreground(job, 0, group_id);
