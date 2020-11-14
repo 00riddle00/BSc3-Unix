@@ -45,6 +45,7 @@ sigint_handler()
         return;
     }
     // TODO avoid magic numbers
+    printf("SIGINT is called!");
     siglongjmp(env, 42);
 }
 
@@ -277,23 +278,12 @@ main()
         if (strcmp(command[0], alias_cls) == 0) {
             clear_screen(1);
 
-            // Skip the fork
             continue;
         }
 
         /* ----------- processing job commands ---------- */
 
-        if(strcmp(command[0], "bg") == 0) {
-            if(command[1] == NULL) {
-                continue;
-            } else {
-                int job_id = atoi(command[1]);
-                JobsList *job = get_job(job_id, 0);
-                put_job_background(job, 1, group_id);
-                continue;
-            }
-        }
-
+        /* send a job to foreground */
         if(strcmp(command[0], "fg") == 0) {
             if(command[1] == NULL) {
                 continue;
@@ -314,16 +304,30 @@ main()
             continue;
         }
 
+        /* send a job to background */
+        if(strcmp(command[0], "bg") == 0) {
+            if(command[1] == NULL) {
+                continue;
+            } else {
+                int job_id = atoi(command[1]);
+                JobsList *job = get_job(job_id, 0);
+                put_job_background(job, 1, group_id);
+                continue;
+            }
+        }
+
+        /* list currently active jobs */
         if (strcmp(command[0], "jobs") == 0 ||
             strcmp(command[0], alias_jobs) == 0) {
             print_jobs();
             continue;
         }
 
+        /* kill a job */
         if(strcmp(command[0], "kill") == 0) {
 
             if(command[2] != NULL) {
-                printf("kill: usage: 'kill %%{job_id}'\n");
+                printf("kill: usage: 'kill %%<job_id>'\n");
                 continue;
             }
 
@@ -331,14 +335,14 @@ main()
                 if (strchr(command[1]++, '%')) {
                     if (*command[1] == '\0') {
                         // TODO: kill latest process
-                        printf("kill: usage: 'kill %%{job_id}'\n");
+                        printf("kill: usage: 'kill %%<job_id>'\n");
                         continue;
                     } else {
                         int cmd = atoi(command[1]);
                         if (cmd != 0) {
                             kill_job(cmd);
                         } else {
-                            printf("kill: usage: 'kill %%{job_id}'\n");
+                            printf("kill: usage: 'kill %%<job_id>'\n");
                         }
                         continue;
                     }
@@ -351,6 +355,8 @@ main()
 
         /* ---------------------------------------------- */
 
+        /* run command either in 
+         * foreground or in background */
         if((strcmp(command[command_index - 1], "&") == 0)) {
             command[--command_index] = NULL;
 			exec_mode = BACKGROUND;
@@ -358,6 +364,7 @@ main()
 			exec_mode = FOREGROUND;
         }
 
+        /* make a fork (ie. create a child process) */
         child_pid = fork();
         if (child_pid < 0) {
             perror("Fork failed");
@@ -365,7 +372,7 @@ main()
         }
 
         if (child_pid == 0) { /* child process */
-			signal(SIGINT, SIG_DFL);
+            signal(SIGINT,  SIG_DFL);
 			signal(SIGQUIT, SIG_DFL);
 			signal(SIGTTOU, SIG_DFL);
 			signal(SIGTTIN, SIG_DFL);
@@ -376,7 +383,12 @@ main()
             * function sets the PGID of the process specified by pid to pgid.
             * If pid = 0, then the process ID of the calling process is used.
             * If pgid = 0, then the PGID of the process specified by pid is made
-            * the same as its process ID. */
+            * the same as its process ID. 
+            *
+            * this command makes the current child's
+            * process group be the same as child's pid.
+            * This lets the child be the leader of the 
+            * group (ie. the current job) */
             setpgid(0,0);
 
 			if(exec_mode == FOREGROUND) {
@@ -393,21 +405,30 @@ main()
                  *
                  *  The calling process must be a member 
                  *  of the same session as pgid and must 
-                 *  have the same controlling terminal. */
+                 *  have the same controlling terminal.
+                 *
+                 *  This command is needed to attach 
+                 *  terminal to the current child process,
+                 *  making it a foreground process */
 				tcsetpgrp(STDIN_FILENO, getpid());
 			}
 
-            /* notify about job being put in the background,
-             * printing its id and pid, for example: 
+            /* the child notifies about it being put in the 
+             * background, by printing its id and pid, for example: 
              * [1] 248601 */
 			if(exec_mode == BACKGROUND) {
 				printf("[%d] %d\n", ++active_jobs, (int) getpid());
 			}
 
-            /* Never returns if the call is successful
+            /* the child process is replaced with a new process,
+             * by using any of the function from "exec" family.
+             * The pid of the process stays the same though.
+             *
+             * exec never returns if the call is successful
              * 'v' in execvp means passing an array of arguments
              * 'p' means do path searching for commands (ex. /usr/bin/ls)
-             * no 'e' means inherit the environment from the parent */
+             * no 'e' means inherit the environment from the parent
+             */
             if (execvp(command[0], command) < 0) {
                 fprintf( stderr,
                          "%s%s%s\n", 
@@ -417,7 +438,10 @@ main()
                 exit(0);
             }
         } else { /* parent process */
-			signal(SIGINT, SIG_DFL);
+
+            /* parent process should also 
+             * set the child as the leader
+             * of child's group */
 			setpgid(child_pid, child_pid);
 
             int i = 0;
@@ -427,8 +451,22 @@ main()
                 i++;
             }
 
+            /* parent process is managing job control.
+             * It adds a new job, identified by the group id, 
+             * which is equal to child_pid (the group leader) */
 			jobs_list = add_job(child_pid, job_name, (int) exec_mode);
+
+            /* parent process tracks the statuses of its
+             * child processes (foreground/background/suspended).
+             *
+             * depending on this, parent process controls 
+             * access to the terminal, can change processes'
+             * execution mode (status), and is also prepared 
+             * to perform kill, suspend or continue operations
+             * on its managed processes.
+             */
 			JobsList *job = get_job(child_pid, 1);
+
 			if(exec_mode == FOREGROUND) {
 				 put_job_foreground(job, 0, group_id);
 			}
