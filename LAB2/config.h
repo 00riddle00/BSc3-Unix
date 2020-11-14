@@ -23,7 +23,6 @@ Prompt examples:
 "┌─{ tsh}[ %d][ %u@%h][ %w]>\n└─╼ "
 "┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ "
 */
-
 static char *prompt = "┌─{ tsh}[ %d][ %t][ %u@%h][ %w][華 %j]>\n└─╼ ";
 
 /*==================================
@@ -63,11 +62,9 @@ static const int styles[][5]  = {
     [StyleErrInput]    = { col_white,        col_black,    NO,        NO,       NO      }, 
 };
 
-static const char alias_cls[]  = "cls";
+static const char alias_cls[]  = "c";
 static const char alias_exit[] = "q";
 static const char alias_jobs[] = "j";
-// TODO make this alias work
-static const char alias_ls[]   = "ls --color=auto";
 
 /*==================================
   Startup
@@ -99,5 +96,4 @@ static const char startup[][512] = {
           "---Welcome to tsh - a minimal UNIX shell!--\n"
           "===========================================",
 };
-
 
