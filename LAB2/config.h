@@ -91,7 +91,7 @@ static const char startup[][512] = {
 };
 
 /*==================================
-  Text style
+  Text Style
 ==================================*/
 
 /* ANSI color codes for defining 256 

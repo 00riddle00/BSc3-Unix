@@ -183,6 +183,45 @@ main()
     char *err_msg_style    = create_style(styles[StyleErrMsg]);
     char *err_input_style  = create_style(styles[StyleErrInput]);
 
+    /* Set up prompt in advance by filling
+     * placeholders with information which 
+     * will not change during the runtime of
+     * the shell (placeholders defined in 
+     * config.h, section "Prompt") */
+    prompt = 
+        str_replace(
+        str_replace(
+        str_replace(
+        str_replace(
+        str_replace(
+        str_replace(
+        str_replace(
+        str_replace(
+        str_replace(
+        str_replace(
+
+            prompt, 
+
+        "%u",            user_name),
+        "%h",            host_name),
+        "${col_black}",  get_fg_color(col_black)),
+        "${col_white}",  get_fg_color(col_white)),
+        "${col_red}",    get_fg_color(col_red)),
+        "${col_green}",  get_fg_color(col_green)),
+        "${col_blue}",   get_fg_color(col_blue)),
+        "${col_yellow}", get_fg_color(col_yellow)),
+        "${col_purple}", get_fg_color(col_purple)),
+        "${col_aqua}",   get_fg_color(col_aqua));
+
+
+    /* Set up prompt style using "Text Style"
+     * section options in config.h */
+    prompt = set_style(prompt_style, prompt);
+
+    /* This variable will contain a new 
+     * prompt * every loop cycle */
+    char* curr_prompt;
+
     /* ------- signal handling --------- */
 
     /* SIGINT */
@@ -228,50 +267,25 @@ main()
             /* TODO optimize: check all the flags beforehand
                 plus some flags are not changed during shell runtime */
 
-        char* curr_prompt;
-
-        /* TODO move those str_replace() calls 
-         * which do not change over shell's 
-         * runtime outside of while loop.
-         */
+        /* replace prompts' placeholders 
+         * with the information which changes 
+         * every loop cycle of the shell */
         curr_prompt = 
             str_replace(
             str_replace(
             str_replace(
             str_replace(
             str_replace(
-            str_replace(
-            str_replace(
-            str_replace(
 
-            str_replace(
-            str_replace(
-            str_replace(
-            str_replace(
-            str_replace(
-            str_replace(
-            str_replace(
+                prompt,
 
-                prompt, 
-
-            "%u",     user_name),
-            "%h",     host_name),
             "%w",     getcwd(current_dir, 512)),
             home_dir, "~"),
             "%d",     date_buffer),
             "%t",     time_buffer),
-            "%j",     active_jobs_str),
+            "%j",     active_jobs_str);
 
-            "${col_black}",  get_fg_color(col_black)),
-            "${col_white}",  get_fg_color(col_white)),
-            "${col_red}",    get_fg_color(col_red)),
-            "${col_green}",  get_fg_color(col_green)),
-            "${col_blue}",   get_fg_color(col_blue)),
-            "${col_yellow}", get_fg_color(col_yellow)),
-            "${col_purple}", get_fg_color(col_purple)),
-            "${col_aqua}",   get_fg_color(col_aqua));
-
-            input = read_line(set_style(prompt_style, curr_prompt), cmd_buff_size);
+            input = read_line(curr_prompt, cmd_buff_size);
         }
 
         if (input == NULL) { /* Exit on Ctrl-D */
