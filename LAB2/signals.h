@@ -8,7 +8,11 @@ extern sigjmp_buf env;
 extern volatile sig_atomic_t jump_active;
 
 /* function declarations */
+
+/* trap SIGINT and perform long jump */
 void sigint_handler();
-void signal_handler_child();
+
+/* trap SIGCHLD and perform job management */
+void sigchld_handler();
 
 #endif /* SIGNALS */

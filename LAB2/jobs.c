@@ -125,8 +125,7 @@ wait_job(JobsList *job)
      * "pid" - child's process' process ID
      *
      * "status-ptr" points to an object storing the status information 
-     * from the child process, unless status-ptr is a null pointer
-     * (as is the case here).
+     * from the child process (unless status-ptr is a null pointer).
      *
      * "options" argument is a bit mask. WNOHANG flag indicates that 
      * the parent process shouldn’t wait.

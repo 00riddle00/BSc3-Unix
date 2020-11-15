@@ -108,7 +108,7 @@ get_input(char *input, int buffsize)
 
     char *separator = " ";
     char *parsed;
-    // FIXME avoid using this global var
+    // TODO avoid using this global var
     command_index = 0;
 
     parsed = strtok(input, separator);
@@ -147,7 +147,7 @@ main()
     /* Set up info to be displayed at the prompt */
     char *user_name = getenv("USER");
 
-    // TODO get rid of magic numbers
+    // TODO avoid magic numbers
     char home_dir[20];
     sprintf(home_dir, "/home/%s", user_name);
 
@@ -236,7 +236,7 @@ main()
      * waiting to happen implicitly by trapping 
      * SIGCHLD signal.
      */
-    signal(SIGCHLD, &signal_handler_child);
+    signal(SIGCHLD, &sigchld_handler);
     /* --------------------------------- */
 
     while (1) {   
@@ -264,9 +264,6 @@ main()
 
             strftime(date_buffer, 16, "%Y-%m-%d", time_info);
             strftime(time_buffer, 16, "%H:%M", time_info);
-
-            /* TODO optimize: check all the flags beforehand
-                plus some flags are not changed during shell runtime */
 
         /* replace prompts' placeholders 
          * with the information which changes 
