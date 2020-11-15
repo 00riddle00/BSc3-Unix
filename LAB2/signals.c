@@ -62,10 +62,26 @@ sigchld_handler()
         /* WIFEXITED process completion macro returns a nonzero value 
          * if the child process terminated normally with exit or _exit */
         if (WIFEXITED(termination_status)) {
-            /* if the job was in the background, notify about its
-             * termination and delete it from the list */
+            /* if the job was in the background, and it terminated
+             * without error, notify about its termination. If the
+             * error occurred, do not print anything (error handling
+             * is done in the child process then) 
+             * Remove the job from the List either way
+             */
             if (job->status == BACKGROUND) {
-                printf("\n[%d]+  done    %s\n", job->id, job->name);
+
+                /* If the value of WIFEXITED(stat_val) is non-zero, this 
+                 * macro evaluates to the low-order 8 bits of the status 
+                 * argument that the child process passed to _exit() or 
+                 * exit(), or the value the child process returned from main().
+                 */
+                int exit_status = WEXITSTATUS(termination_status);
+
+                if(exit_status == 0) {
+                    printf("\n[%d]+  done    %s\n", job->id, job->name);
+                } else {
+                    printf("\n[%d]+  exit %d   %s\n", job->id, exit_status, job->name);
+                }
                 jobs_list = del_job(job);
             }
         }

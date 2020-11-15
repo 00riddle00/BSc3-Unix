@@ -452,13 +452,6 @@ main()
 				tcsetpgrp(STDIN_FILENO, getpid());
 			}
 
-            /* the child notifies about it being put in the 
-             * background, by printing its id and pid, for example: 
-             * [1] 248601 */
-			if(exec_mode == BACKGROUND) {
-				printf("[%d] %d\n", ++active_jobs, (int) getpid());
-			}
-
             /* the child process is replaced with a new process,
              * by using any of the function from "exec" family.
              * The pid of the process stays the same though.
@@ -474,7 +467,7 @@ main()
                          set_style(err_prefix_style, "tsh: "),
                          set_style(err_msg_style, "command not found: "),
                          set_style(err_input_style, command[0]) );
-                exit(0);
+                exit(127);
             }
         } else { /* parent process */
 

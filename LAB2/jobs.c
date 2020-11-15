@@ -22,6 +22,12 @@ add_job(pid_t pgid, char *name, int status)
     new_job->status = status;
     new_job->next = NULL;
 
+    /* notification about the child being put in the 
+     * background, by printing child's its id and pid */
+    if (status == BACKGROUND) {
+        printf("[%d] %d\n", active_jobs + 1, (int) pgid);
+    }
+
     if(jobs_list == NULL) {
         active_jobs++;
         new_job->id = active_jobs;
