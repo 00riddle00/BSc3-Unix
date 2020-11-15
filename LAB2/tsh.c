@@ -11,8 +11,9 @@
 #include <readline/readline.h>
 #endif /* READLINE */
 
-#include "utils.h"
 #include "jobs.h"
+#include "signals.h"
+#include "utils.h"
 
 /* macros */
 #include "dbg.h" /* useful debugging macros */
