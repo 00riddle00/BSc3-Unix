@@ -23,15 +23,12 @@ enum { StylePrompt, StyleErrPrefix, StyleErrMsg, StyleErrInput }; /* style */
 
 /* variables */
 static const int cmd_buff_size = 512;
-static sigjmp_buf env;
-static volatile sig_atomic_t jump_active = 0;
 char **command;
 int command_index;
 pid_t group_id;
 int exec_mode;
 
 /* function declarations */
-void sigint_handler();
 char *read_line(char *prompt, int buffsize);
 char **get_input(char *input, int buffsize);
 
@@ -39,15 +36,6 @@ char **get_input(char *input, int buffsize);
 #include "config.h"
 
 /* function implementations */
-void 
-sigint_handler() 
-{
-    if (!jump_active) {
-        return;
-    }
-    // TODO avoid magic numbers
-    siglongjmp(env, 42);
-}
 
 // TODO move to utils file
 #ifdef READLINE

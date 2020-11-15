@@ -1,11 +1,27 @@
 /* function implementations */
 
+#include <setjmp.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
 #include "jobs.h"
 #include "signals.h"
+
+/* variables */
+sigjmp_buf env;
+volatile sig_atomic_t jump_active = 0;
+
+/* function implementations */
+void 
+sigint_handler() 
+{
+    if (!jump_active) {
+        return;
+    }
+    // TODO avoid magic numbers
+    siglongjmp(env, 42);
+}
 
 void 
 signal_handler_child() 
