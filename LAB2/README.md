@@ -11,7 +11,7 @@
 ### Making an archive
 * make .tar.gz with `make dist`
 
-![tsh_prompt](tsh_prompt.png)
+![tsh_prompt](prompt.gif)
 
 ### Configuration
 * custom configuration can be set in [config.h](config.h)
