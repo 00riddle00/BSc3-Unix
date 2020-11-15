@@ -11,6 +11,7 @@ int active_jobs;
 JobsList *jobs_list;
 
 /* function implementations */
+
 JobsList *
 add_job(pid_t pgid, char *name, int status) 
 {
@@ -110,8 +111,6 @@ change_job_status(int pid, int status)
     }
 }
 
-/* this function is used 
- * only with a foreground job */
 void 
 wait_job(JobsList *job) 
 {
@@ -160,7 +159,7 @@ kill_job(int job_id)
 }
 
 void 
-put_job_foreground(JobsList *job, int continue_job, pid_t group_id) 
+put_job_foreground(JobsList *job, int continue_job, pid_t ppgid) 
 {
     if(job == NULL) {
         return;
@@ -174,11 +173,11 @@ put_job_foreground(JobsList *job, int continue_job, pid_t group_id)
     }
 
     wait_job(job);
-    tcsetpgrp(STDIN_FILENO, group_id);
+    tcsetpgrp(STDIN_FILENO, ppgid);
 }
 
 void 
-put_job_background(JobsList *job, int continue_job, pid_t group_id)
+put_job_background(JobsList *job, int continue_job, pid_t ppgid)
 {
     if(job == NULL) {
         return;
@@ -189,7 +188,31 @@ put_job_background(JobsList *job, int continue_job, pid_t group_id)
             perror("kill (SIGCONT)");
         }
     }
-    tcsetpgrp(STDIN_FILENO, group_id);
+    tcsetpgrp(STDIN_FILENO, ppgid);
+}
+
+void 
+print_jobs() 
+{
+    JobsList *job = jobs_list;
+    if (job == NULL) {
+        return;
+    }
+
+    printf("________________________________________________________________\n");
+    printf("| ID   | PID    | STATUS     | STATE | NAME OF EXEC            |\n");
+    printf("----------------------------------------------------------------\n");
+    while (job != NULL) {
+        printf("| [%d]    %-7d  %-11s  %-6s  %-24s|\n", 
+                job->id, 
+                job->pgid, 
+                statuses[job->status][0], 
+                statuses[job->status][1], 
+                job->name);
+
+        job = job->next;
+     }
+    printf("----------------------------------------------------------------\n");
 }
 
 void 
@@ -225,28 +248,4 @@ signal_handler_child()
             }
         }
     }
-}
-
-void 
-print_jobs() 
-{
-    JobsList *job = jobs_list;
-    if (job == NULL) {
-        return;
-    }
-
-    printf("________________________________________________________________\n");
-    printf("| ID   | PID    | STATUS     | STATE | NAME OF EXEC            |\n");
-    printf("----------------------------------------------------------------\n");
-    while (job != NULL) {
-        printf("| [%d]    %-7d  %-11s  %-6s  %-24s|\n", 
-                job->id, 
-                job->pgid, 
-                statuses[job->status][0], 
-                statuses[job->status][1], 
-                job->name);
-
-        job = job->next;
-     }
-    printf("----------------------------------------------------------------\n");
 }
