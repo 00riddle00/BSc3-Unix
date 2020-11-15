@@ -5,7 +5,7 @@
 * readline (optional)
 
 ### Installing
-* install tsh with `sudo make install`
+* install `tsh` with `sudo make install`
 * uninstall with `sudo make uninstall`
 
 ![tsh_prompt](prompt.gif)

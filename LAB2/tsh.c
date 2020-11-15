@@ -213,17 +213,29 @@ main()
 
     /* ------- signal handling --------- */
 
-    /* SIGINT */
+    /* Parent process traps SIGINT
+     * and reloads the shell */
     struct sigaction s;
     s.sa_handler = sigint_handler;
     sigemptyset(&s.sa_mask);
     s.sa_flags = SA_RESTART;
     sigaction(SIGINT, &s, NULL);
 
-    // TODO change signal fn to sigaction
+    // TODO change signal() function to sigaction()
+    
+    /* make parent process ignore the following 
+     * signals (only child processes are affected 
+     * by them) */
     signal(SIGTTOU, SIG_IGN);  // ttyout
     signal(SIGTTIN, SIG_IGN);  // ttyin
     signal(SIGTSTP, SIG_IGN);  // ^Z
+
+    /* When a child process stops or terminates, 
+     * SIGCHLD is sent to the parent process. 
+     * The parent process can arrange for such 
+     * waiting to happen implicitly by trapping 
+     * SIGCHLD signal.
+     */
     signal(SIGCHLD, &signal_handler_child);
     /* --------------------------------- */
 
@@ -399,12 +411,14 @@ main()
         }
 
         if (child_pid == 0) { /* child process */
-            signal(SIGINT,  SIG_DFL);
-			signal(SIGQUIT, SIG_DFL);
-			signal(SIGTTOU, SIG_DFL);
-			signal(SIGTTIN, SIG_DFL);
-			signal(SIGTSTP, SIG_DFL);
-			signal(SIGCHLD, &signal_handler_child);
+
+            /* make child process react to the following 
+             * signals with the default behaviour */
+            signal(SIGINT,  SIG_DFL); // ^C
+			signal(SIGQUIT, SIG_DFL); // like SIGTERM, but also dumps core
+			signal(SIGTTOU, SIG_DFL); // ttyout
+			signal(SIGTTIN, SIG_DFL); // ttyin
+			signal(SIGTSTP, SIG_DFL); // ^Z
 
             /* "int setpgid(pid_t pid, pid_t pgid)"
              *
