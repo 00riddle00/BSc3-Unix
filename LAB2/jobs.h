@@ -1,3 +1,6 @@
+#ifndef JOBS_H
+#define JOBS_H
+
 /* macros */
 #define FOREGROUND 0
 #define BACKGROUND 1
@@ -84,3 +87,4 @@ void print_jobs();
 
 void signal_handler_child();
 
+#endif /* JOBS */

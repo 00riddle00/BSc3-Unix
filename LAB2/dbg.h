@@ -22,4 +22,5 @@
 
 #define CHECK_MEM(A) check((A), "Out of memory.")
 #define CHECK_DEBUG(A, M, ...) if((!A)) { debug(M, ##__VA_ARGS__); errno = 0; goto error; }
-#endif
+
+#endif /* DBG */

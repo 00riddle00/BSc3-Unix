@@ -1,3 +1,6 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 /* macros */
 
 /* resets the color and style of text */
@@ -55,3 +58,5 @@ char *get_fg_color(int col256_no);
  *           The result must be freed if it is non-NULL.
  */
 char *str_replace(char *orig, char *rep, char *with);
+
+#endif /* UTILS */
