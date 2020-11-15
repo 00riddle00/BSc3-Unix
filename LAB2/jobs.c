@@ -163,13 +163,18 @@ put_job_foreground(JobsList *job, int continue_job, pid_t ppgid)
     if(job == NULL) {
         return;
     }
-    job->status = FOREGROUND;
     tcsetpgrp(STDIN_FILENO, job->pgid);
     if(continue_job) {
         if(kill(job->pgid, SIGCONT) < 0) {
             perror("kill (SIGCONT)");
         }
+        printf("\n[%d]+  continued    %s\n", job->id, job->name);
+    } else {
+        if (job->status == BACKGROUND) {
+            printf("\n[%d]+  running    %s\n", job->id, job->name);
+        }
     }
+    job->status = FOREGROUND;
 
     wait_job(job);
     tcsetpgrp(STDIN_FILENO, ppgid);
@@ -186,6 +191,7 @@ put_job_background(JobsList *job, int continue_job, pid_t ppgid)
         if(kill(job->pgid, SIGCONT) < 0) {
             perror("kill (SIGCONT)");
         }
+        printf("\n[%d]+  continued    %s\n", job->id, job->name);
     }
     tcsetpgrp(STDIN_FILENO, ppgid);
 }

@@ -391,8 +391,7 @@ main()
 
         /* ---------------------------------------------- */
 
-        /* run command either in 
-         * foreground or in background */
+        /* run command either in foreground or in background */
         if((strcmp(command[command_index - 1], "&") == 0)) {
             command[--command_index] = NULL;
 			exec_mode = BACKGROUND;
