@@ -1,4 +1,4 @@
-![tsh_logo](tsh_logo.png)
+![tsh_logo](tsh.png)
 ## tsh - Minimal Unix Shell for learning purposes
 
 ### Dependencies
