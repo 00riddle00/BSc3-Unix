@@ -321,6 +321,7 @@ main()
 
         /* ----------- processing job commands ---------- */
 
+        // TODO wrap job commands' input handling in a separate function
         /* send a job to foreground */
         if(strcmp(command[0], "fg") == 0) {
 
