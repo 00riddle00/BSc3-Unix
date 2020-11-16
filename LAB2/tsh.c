@@ -323,33 +323,90 @@ main()
 
         /* send a job to foreground */
         if(strcmp(command[0], "fg") == 0) {
-            if(command[1] == NULL) {
+
+            /* make "fg" accept only one argument */
+            if(command[2] != NULL) {
+                printf("tsh: usage: 'fg %%{job_id}'\n");
                 continue;
             }
 
-            int job_id = atoi(command[1]);
-            JobsList *job = get_job(job_id, 0);
-            if(job == NULL) {
-                continue;
-            }
+            if(command[1] != NULL) {
+                if (strchr(command[1]++, '%')) {
+                    if (*command[1] == '\0') {
+                        // TODO: fg latest process
+                        printf("tsh: usage: 'fg %%{job_id}'\n");
+                        continue;
+                    } else {
+                        int cmd = atoi(command[1]);
+                        if (cmd != 0) {
 
-            if(job->status == SUSPENDED) {
-                put_job_foreground(job, 1, group_id);
+                            int job_id = atoi(command[1]);
+                            JobsList *job = get_job(job_id, 0);
+                            if(job == NULL) {
+                                continue;
+                            }
+
+                            if(job->status == SUSPENDED) {
+                                put_job_foreground(job, 1, group_id);
+                            } else {
+                                put_job_foreground(job, 0, group_id);
+                            }
+
+                            continue;
+                        } else {
+                            printf("tsh: usage: 'fg %%{job_id}'\n");
+                        }
+                        continue;
+                    }
+                } else {
+                    printf("tsh: usage: 'fg %%{job_id}'\n");
+                    continue;
+                } 
             } else {
-                put_job_foreground(job, 0, group_id);
+                printf("tsh: fg: not enough arguments\n");
+                continue;
             }
-
-            continue;
         }
 
         /* send a job to background */
         if(strcmp(command[0], "bg") == 0) {
-            if(command[1] == NULL) {
+
+            /* make "bg" accept only one argument */
+            if(command[2] != NULL) {
+                printf("tsh: usage: 'bg %%{job_id}'\n");
                 continue;
+            }
+
+            if(command[1] != NULL) {
+                if (strchr(command[1]++, '%')) {
+                    if (*command[1] == '\0') {
+                        // TODO: bg latest process
+                        printf("tsh: usage: 'bg %%{job_id}'\n");
+                        continue;
+                    } else {
+                        int cmd = atoi(command[1]);
+                        if (cmd != 0) {
+
+                            int job_id = atoi(command[1]);
+                            JobsList *job = get_job(job_id, 0);
+                            if(job == NULL) {
+                                continue;
+                            }
+
+                            put_job_background(job, 1, group_id);
+                            continue;
+
+                        } else {
+                            printf("tsh: usage: 'bg %%{job_id}'\n");
+                        }
+                        continue;
+                    }
+                } else {
+                    printf("tsh: usage: 'bg %%{job_id}'\n");
+                    continue;
+                } 
             } else {
-                int job_id = atoi(command[1]);
-                JobsList *job = get_job(job_id, 0);
-                put_job_background(job, 1, group_id);
+                printf("tsh: bg: not enough arguments\n");
                 continue;
             }
         }
@@ -366,7 +423,7 @@ main()
 
             /* make "kill" accept only one argument */
             if(command[2] != NULL) {
-                printf("kill: usage: 'kill %%<job_id>'\n");
+                printf("tsh: usage: 'kill %%{job_id}'\n");
                 continue;
             }
 
@@ -374,18 +431,24 @@ main()
                 if (strchr(command[1]++, '%')) {
                     if (*command[1] == '\0') {
                         // TODO: kill latest process
-                        printf("kill: usage: 'kill %%<job_id>'\n");
+                        printf("tsh: usage: 'kill %%{job_id}'\n");
                         continue;
                     } else {
                         int cmd = atoi(command[1]);
                         if (cmd != 0) {
                             kill_job(cmd);
                         } else {
-                            printf("kill: usage: 'kill %%<job_id>'\n");
+                            printf("tsh: usage: 'kill %%{job_id}'\n");
                         }
                         continue;
                     }
+                } else {
+                    printf("tsh: usage: 'kill %%{job_id}'\n");
+                    continue;
                 } 
+            } else {
+                printf("tsh: kill: not enough arguments\n");
+                continue;
             }
         }
 
