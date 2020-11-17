@@ -251,6 +251,9 @@ main()
         sprintf(active_jobs_str, "%d", active_jobs);
 
         if (sigsetjmp(env, 1) == 42) {
+            /* on hitting Ctrl-C, restart the while 
+            loop from the top and print a newline 
+            (ie. soft reset of the command line) */
             printf("\n");
             continue;
         }
