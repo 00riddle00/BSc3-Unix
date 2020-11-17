@@ -29,8 +29,8 @@ pid_t group_id;
 int exec_mode;
 
 /* function declarations */
-char *read_line(char *prompt, int buffsize);
-char **get_input(char *input, int buffsize);
+char *read_line(char *prompt, size_t buffsize);
+char **get_input(char *input, size_t buffsize);
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -40,14 +40,20 @@ char **get_input(char *input, int buffsize);
 // TODO move to utils file
 #ifdef READLINE
 char *
-read_line(char *prompt, int buffsize) 
+read_line(char *prompt, size_t buffsize) 
 {
-    return readline(prompt);
+    char *input = readline(prompt);
+    if (strlen(input) > buffsize) {
+        printf("tsh: input is too long!\n");
+        exit(127);
+    } else {
+        return input;
+    }
 }
 
 #else
 char *
-read_line(char *prompt, int buffsize) 
+read_line(char *prompt, size_t buffsize) 
 {
     printf(prompt);
 
@@ -98,7 +104,7 @@ read_line(char *prompt, int buffsize)
 
 // TODO move to utils file
 char **
-get_input(char *input, int buffsize) 
+get_input(char *input, size_t buffsize) 
 {
     char **command = malloc(buffsize * sizeof(char *));
     if (command == NULL) {
