@@ -16,3 +16,7 @@
 ### Configuration
 * custom configuration can be set in [config.h](config.h)
 * for information about ANSI color codes, see [COLORS.md](COLORS.md)
+
+### Questions during work submission
+* Why my shell exits after the command "cat -n &", while bash does not.
+* What exactly does `tcsetpgrp(STDIN_FILENO, getpid());` do and why there is no apparent change in behaviour after commenting out this line. Also, same with `tcsetpgrp(STDIN_FILENO, getpid());`
