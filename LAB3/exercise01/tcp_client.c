@@ -51,9 +51,6 @@ int main() {
     // send data to the server
     send(network_socket, client_message, sizeof(client_message), 0);
 
-    // and then close the socket
-    // close(network_socket);
-    //
     waitFor(1);
     
     recv(network_socket, &server_response, sizeof(server_response), 0);

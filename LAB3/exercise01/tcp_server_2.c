@@ -45,7 +45,7 @@ int main() {
     printf("The client's message is: %s\n", client_message);
 
     char modified_client_message[256];
-	// convert client msg to upper case
+	// modify client msg (double each letter)
     int i = 0;
     int j = 0;
     while(client_message[i]) {

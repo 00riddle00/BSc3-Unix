@@ -25,7 +25,6 @@ int main() {
     bind(server_socket, (struct sockaddr*) &server_address, sizeof(server_address));
 
     // 2nd arg - backlog: how many connections can be waiting for this socket.
-    // Set 5, bet doesn't matter
     listen(server_socket, 5);
 
     int client_socket;
@@ -52,7 +51,6 @@ int main() {
     }
 
     printf("The client's modified message is: %s\n", client_message);
-    //close(server_socket);
 
     // create a socket to connect to server2
     int network_socket;
